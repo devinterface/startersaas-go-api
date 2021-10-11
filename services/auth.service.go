@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -89,6 +90,8 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 
 	// create account
 	account.Active = false
+	trialDays, _ := strconv.Atoi(os.Getenv("TRIAL_DAYS"))
+	account.PeriodEndsAt = time.Now().AddDate(0, 0, trialDays)
 	account.FirstSubscription = true
 	err = accountColl.Create(account)
 	if err != nil {

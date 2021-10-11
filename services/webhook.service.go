@@ -1,8 +1,6 @@
 package services
 
 import (
-	"time"
-
 	"devinterface.com/goaas-api-starter/models"
 	"github.com/Kamva/mgm/v3"
 	"github.com/stripe/stripe-go/v71"
@@ -39,9 +37,6 @@ func (webhookService *WebhookService) PaymentSucceeded(event stripe.Event) (succ
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	account.Active = true
 	account.PaymentFailed = false
-	periodEnd := event.Data.Object["period_end"].(float64)
-	periodEndInt := int64(periodEnd)
-	account.PeriodEndsAt = time.Unix(periodEndInt, 0)
 	err = accountService.getCollection().Update(account)
 	go emailService.SendStripeNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[MiniMarket24] Pagamento completato", "Il tuo abbonamento è stato rinnovato!")
 	return err != nil, err
@@ -49,9 +44,12 @@ func (webhookService *WebhookService) PaymentSucceeded(event stripe.Event) (succ
 
 // PaymentFailed function
 func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success bool, err error) {
+	status := event.Data.Object["status"]
+	if status != "active" {
+		return false, err
+	}
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
-	account.Active = true
 	account.PaymentFailed = true
 	err = accountService.getCollection().Update(account)
 	go emailService.SendStripeNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[MiniMarket24] Pagamento fallito", "Il tuo abbonamento è stato rinnovato! Controlla le impostazioni della tua carta di credito.")
@@ -60,6 +58,10 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 
 // TrialWillEnd function
 func (webhookService *WebhookService) TrialWillEnd(event stripe.Event) (success bool, err error) {
+	status := event.Data.Object["status"]
+	if status != "active" {
+		return false, err
+	}
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	go emailService.SendStripeNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[MiniMarket24] Il tuo abbonamento sta per scadere", "Il tuo abbonamento scadrà tra 3 giorni. Se non lo hai annullato, sarà rinnovato nuovamente.")
@@ -68,6 +70,10 @@ func (webhookService *WebhookService) TrialWillEnd(event stripe.Event) (success 
 
 // SubscriptionCreated function
 func (webhookService *WebhookService) SubscriptionCreated(event stripe.Event) (success bool, err error) {
+	status := event.Data.Object["status"]
+	if status != "active" {
+		return false, err
+	}
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	go emailService.SendStripeNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[MiniMarket24] Piano attivato", "Congratulazioni, il tuo piano è stato attivato!")
@@ -76,6 +82,10 @@ func (webhookService *WebhookService) SubscriptionCreated(event stripe.Event) (s
 
 // SubscriptionUpdated function
 func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (success bool, err error) {
+	status := event.Data.Object["status"]
+	if status != "active" {
+		return false, err
+	}
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	go emailService.SendStripeNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[MiniMarket24] Piano aggiornato", "Congratulazioni, il tuo piano è stato aggiornato!")

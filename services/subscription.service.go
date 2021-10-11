@@ -95,10 +95,6 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 		}
 	} else {
 		params := &stripe.SubscriptionParams{Customer: stripe.String(sCustomer.ID), Plan: stripe.String(sPlan.ID), PaymentBehavior: stripe.String("allow_incomplete")}
-		if account.FirstSubscription {
-			trialEnd := xDaysFromNow(sPlan.TrialPeriodDays).Unix()
-			params.TrialEnd = &trialEnd
-		}
 		params.AddExpand("latest_invoice.payment_intent")
 		subscription, err = sub.New(params)
 		if err != nil {
