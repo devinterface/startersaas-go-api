@@ -3,7 +3,6 @@ package services
 import (
 	"errors"
 	"os"
-	"time"
 
 	"devinterface.com/goaas-api-starter/models"
 	"github.com/stripe/stripe-go/v71"
@@ -46,7 +45,7 @@ func (subscriptionService *SubscriptionService) CreateCustomer(userID interface{
 	params.AddMetadata("userName", user.Name)
 	params.AddMetadata("userSurname", user.Surname)
 
-	sCustomer, err = customer.New(params)
+	sCustomer, _ = customer.New(params)
 	account.StripeCustomerID = sCustomer.ID
 	err = accountService.getCollection().Update(account)
 	return sCustomer, err
@@ -66,6 +65,9 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 	}
 	if account.StripeCustomerID == "" {
 		_, err = subscriptionService.CreateCustomer(userID)
+		if err != nil {
+			return nil, err
+		}
 		err = accountService.getCollection().FindByID(user.AccountID, account)
 		if err != nil {
 			return nil, err
@@ -115,7 +117,7 @@ func (subscriptionService *SubscriptionService) GetCustomer(accountID interface{
 		return nil, err
 	}
 	if account.StripeCustomerID == "" {
-		return nil, errors.New("User is not a stripe USER")
+		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 	sCustomer, err = customer.Get(account.StripeCustomerID, &stripe.CustomerParams{})
@@ -131,7 +133,7 @@ func (subscriptionService *SubscriptionService) GetCustomerInvoices(accountID in
 		return nil, err
 	}
 	if account.StripeCustomerID == "" {
-		return nil, errors.New("User is not a stripe USER")
+		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 	params := &stripe.InvoiceListParams{Customer: stripe.String(account.StripeCustomerID)}
@@ -151,7 +153,7 @@ func (subscriptionService *SubscriptionService) GetCustomerCards(accountID inter
 		return nil, err
 	}
 	if account.StripeCustomerID == "" {
-		return nil, errors.New("User is not a stripe USER")
+		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
@@ -168,25 +170,19 @@ func (subscriptionService *SubscriptionService) GetCustomerCards(accountID inter
 }
 
 // CancelSubscription function
-func (subscriptionService *SubscriptionService) CancelSubscription(accountID interface{}) (sCustomer *stripe.Customer, err error) {
+func (subscriptionService *SubscriptionService) CancelSubscription(accountID interface{}, subscriptionId string) (sCustomer *stripe.Customer, err error) {
 	account := &models.Account{}
 	err = accountService.getCollection().FindByID(accountID, account)
 	if err != nil {
 		return nil, err
 	}
 	if account.StripeCustomerID == "" {
-		return nil, errors.New("User is not a stripe USER")
+		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
-	sCustomer, err = customer.Get(account.StripeCustomerID, &stripe.CustomerParams{})
 
-	hasSubscription := len(sCustomer.Subscriptions.Data) == 1
-
-	if hasSubscription {
-		sSubscriptionID := sCustomer.Subscriptions.Data[0].ID
-		params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(true)}
-		sub.Update(sSubscriptionID, params)
-	}
+	params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(true)}
+	sub.Update(subscriptionId, params)
 
 	sCustomer, err = customer.Get(account.StripeCustomerID, &stripe.CustomerParams{})
 
@@ -201,7 +197,7 @@ func (subscriptionService *SubscriptionService) AddCreditCard(accountID interfac
 		return nil, err
 	}
 	if account.StripeCustomerID == "" {
-		return nil, errors.New("User is not a stripe USER")
+		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
@@ -232,7 +228,7 @@ func (subscriptionService *SubscriptionService) RemoveCreditCard(accountID inter
 		return nil, err
 	}
 	if account.StripeCustomerID == "" {
-		return nil, errors.New("User is not a stripe USER")
+		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
@@ -257,7 +253,7 @@ func (subscriptionService *SubscriptionService) SetDefaultCreditCard(accountID i
 		return nil, err
 	}
 	if account.StripeCustomerID == "" {
-		return nil, errors.New("User is not a stripe USER")
+		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
@@ -265,9 +261,4 @@ func (subscriptionService *SubscriptionService) SetDefaultCreditCard(accountID i
 	sCustomer, err = customer.Update(account.StripeCustomerID, customerParams)
 
 	return sCustomer, err
-}
-
-func xDaysFromNow(daysFromNow int64) time.Time {
-	now := time.Now()
-	return now.AddDate(0, 0, int(daysFromNow))
 }

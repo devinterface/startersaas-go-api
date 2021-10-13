@@ -37,6 +37,9 @@ func (accountService *AccountService) Update(id interface{}, params interface{})
 		return account, err
 	}
 	err = mapstructure.Decode(params, &account)
+	if err != nil {
+		return account, err
+	}
 	err = accountService.getCollection().Update(account)
 	return account, err
 }
@@ -45,6 +48,9 @@ func (accountService *AccountService) Update(id interface{}, params interface{})
 func (accountService *AccountService) Create(params interface{}) (createdAccount *models.Account, err error) {
 	account := &models.Account{}
 	err = mapstructure.Decode(params, &account)
+	if err != nil {
+		return account, err
+	}
 	err = accountService.getCollection().Create(account)
 	return account, err
 }

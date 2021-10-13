@@ -22,7 +22,8 @@ type Account struct {
 	Active                bool      `json:"active" bson:"active"`
 	FirstSubscription     bool      `json:"firstSubscription" bson:"firstSubscription"`
 	PaymentFailed         bool      `json:"paymentFailed" bson:"paymentFailed"`
-	PeriodEndsAt          time.Time `json:"periodEndsAt" bson:"periodEndsAt"`
+	PaymentFailedFirstAt  time.Time `json:"paymentFailedFirstAt" bson:"paymentFailedFirstAt"`
+	TrialPeriodEndsAt     time.Time `json:"trialPeriodEndsAt" bson:"trialPeriodEndsAt"`
 }
 
 // AccountSerializer function
@@ -33,6 +34,6 @@ type AccountSerializer struct {
 // ShowAccountSerializer function
 func ShowAccountSerializer() *AccountSerializer {
 	a := &AccountSerializer{structomap.New()}
-	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "FirstSubscription", "PaymentFailed", "CreatedAt", "UpdatedAt")
+	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "FirstSubscription", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "CreatedAt", "UpdatedAt")
 	return a
 }

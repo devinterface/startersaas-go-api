@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"devinterface.com/goaas-api-starter/models"
 	"github.com/Kamva/mgm/v3"
 	"github.com/stripe/stripe-go/v71"
@@ -28,15 +30,19 @@ func (webhookService *WebhookService) HandleWebhook(payload map[string]interface
 	} else if event.Type == "customer.subscription.updated" {
 		success, err = webhookService.SubscriptionUpdated(event)
 	}
-	return true, err
+	return success, err
 }
 
 // PaymentSucceeded function
 func (webhookService *WebhookService) PaymentSucceeded(event stripe.Event) (success bool, err error) {
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
+	if err != nil {
+		return false, err
+	}
 	account.Active = true
 	account.PaymentFailed = false
+	account.PaymentFailedFirstAt = *new(time.Time)
 	err = accountService.getCollection().Update(account)
 	go emailService.SendStripeNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[MiniMarket24] Pagamento completato", "Il tuo abbonamento è stato rinnovato!")
 	return err != nil, err
@@ -49,8 +55,11 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 		return false, err
 	}
 	sCustomerID := event.Data.Object["customer"]
-	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
+	account, _ := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	account.PaymentFailed = true
+	if !account.PaymentFailedFirstAt.IsZero() {
+		account.PaymentFailedFirstAt = time.Now()
+	}
 	err = accountService.getCollection().Update(account)
 	go emailService.SendStripeNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[MiniMarket24] Pagamento fallito", "Il tuo abbonamento è stato rinnovato! Controlla le impostazioni della tua carta di credito.")
 	return err != nil, err

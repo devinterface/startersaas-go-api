@@ -34,6 +34,9 @@ func (userService *UserService) Update(id interface{}, params interface{}) (upda
 		return user, err
 	}
 	err = mapstructure.Decode(params, &user)
+	if err != nil {
+		return nil, err
+	}
 	err = userService.getCollection().Update(user)
 	return user, err
 }
@@ -47,7 +50,7 @@ func (userService *UserService) Create(params interface{}, accountID primitive.O
 	existentUser := &models.User{}
 	err = userService.getCollection().First(bson.M{"email": user.Email}, existentUser)
 	if existentUser.ID != primitive.NilObjectID {
-		return existentUser, errors.New("Email is invalid or already taken")
+		return existentUser, errors.New("email is invalid or already taken")
 	}
 
 	if user.Password != "" {

@@ -34,7 +34,7 @@ func checkPasswordHash(password, hash string) bool {
 func (authService *AuthService) Login(email string, cleanPassword string, refreshToken bool) (response map[string]string, err error) {
 	user := &models.User{}
 	coll := mgm.CollectionByName("user")
-	err = coll.First(bson.M{"email": email, "active": true}, user)
+	coll.First(bson.M{"email": email, "active": true}, user)
 
 	// check password if we are not refreshing JWT token
 	if !refreshToken {
@@ -72,9 +72,9 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 
 	// check if subdomain unique
 	existentAccount := &models.Account{}
-	err = accountColl.First(bson.M{"subdomain": account.Subdomain}, existentAccount)
+	accountColl.First(bson.M{"subdomain": account.Subdomain}, existentAccount)
 	if existentAccount.ID != primitive.NilObjectID {
-		return false, errors.New("Subdomain is invalid or already taken")
+		return false, errors.New("subdomain is invalid or already taken")
 	}
 
 	user := &models.User{}
@@ -83,15 +83,15 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 
 	// check if email unique
 	existentUser := &models.User{}
-	err = userColl.First(bson.M{"email": user.Email}, existentUser)
+	userColl.First(bson.M{"email": user.Email}, existentUser)
 	if existentUser.ID != primitive.NilObjectID {
-		return false, errors.New("Email is invalid or already taken")
+		return false, errors.New("email is invalid or already taken")
 	}
 
 	// create account
 	account.Active = false
 	trialDays, _ := strconv.Atoi(os.Getenv("TRIAL_DAYS"))
-	account.PeriodEndsAt = time.Now().AddDate(0, 0, trialDays)
+	account.TrialPeriodEndsAt = time.Now().AddDate(0, 0, trialDays)
 	account.FirstSubscription = true
 	err = accountColl.Create(account)
 	if err != nil {
@@ -158,7 +158,7 @@ func (authService *AuthService) ResetPassword(token string, password string) (su
 func (authService *AuthService) Sso(sso string) (response map[string]string, err error) {
 	user := &models.User{}
 	coll := mgm.CollectionByName("user")
-	err = coll.First(bson.M{"active": true, "sso": sso}, user)
+	coll.First(bson.M{"active": true, "sso": sso}, user)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": user.Email,

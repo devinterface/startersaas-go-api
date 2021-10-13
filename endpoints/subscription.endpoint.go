@@ -89,13 +89,18 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerCards(ctx *fiber.Ct
 
 // CancelSubscription function
 func (subscriptionEndpoint *SubscriptionEndpoint) CancelSubscription(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
 	}
+	var inputMap = make(map[string]interface{})
+	ctx.BodyParser(&inputMap)
+	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
+		"subscriptionId": "ascii,required",
+	})
 	account, _ := userEndpoint.CurrentAccount(ctx)
-	sCustomer, err := subscriptionService.CancelSubscription(account.ID)
+	sCustomer, err := subscriptionService.CancelSubscription(account.ID, inputMap["subscriptionId"].(string))
 	if err != nil {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": err.Error(),
@@ -106,7 +111,7 @@ func (subscriptionEndpoint *SubscriptionEndpoint) CancelSubscription(ctx *fiber.
 
 // AddCreditCard function
 func (subscriptionEndpoint *SubscriptionEndpoint) AddCreditCard(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -133,7 +138,7 @@ func (subscriptionEndpoint *SubscriptionEndpoint) AddCreditCard(ctx *fiber.Ctx) 
 
 // RemoveCreditCard function
 func (subscriptionEndpoint *SubscriptionEndpoint) RemoveCreditCard(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -158,7 +163,7 @@ func (subscriptionEndpoint *SubscriptionEndpoint) RemoveCreditCard(ctx *fiber.Ct
 
 // SetDefaultCreditCard function
 func (subscriptionEndpoint *SubscriptionEndpoint) SetDefaultCreditCard(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})

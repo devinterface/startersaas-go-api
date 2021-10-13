@@ -29,6 +29,9 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 	confirmationTokenUUID, _ := uuid.NewRandom()
 	user.ConfirmationToken = confirmationTokenUUID.String()
 	err = userService.getCollection().Update(user)
+	if err != nil {
+		return false, err
+	}
 	frontendActivationURL := os.Getenv("FRONTEND_ACTIVATION_URL")
 	t := template.Must(template.New("activationLink.email.tmpl").ParseFiles("./emails/activationLink.email.tmpl"))
 	data := struct {
@@ -61,6 +64,9 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 	user.PasswordResetToken = generatedUUID.String()
 	user.PasswordResetExpires = time.Now().Add(time.Hour * 3)
 	err = userService.getCollection().Update(user)
+	if err != nil {
+		return false, err
+	}
 	frontendForgotURL := os.Getenv("FRONTEND_FORGOT_URL")
 
 	t := template.Must(template.New("forgotPassword.email.tmpl").ParseFiles("./emails/forgotPassword.email.tmpl"))
@@ -142,6 +148,7 @@ func (emailService *EmailService) SendStripeNotificationEmail(q bson.M, subject 
 
 			err := SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), subject, result, []string{u.Email})
 			if err != nil {
+				return
 			}
 		}(user)
 	}
