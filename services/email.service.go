@@ -9,7 +9,7 @@ import (
 	"text/template"
 	"time"
 
-	"devinterface.com/goaas-api-starter/models"
+	"devinterface.com/startersaas-go-api/models"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )

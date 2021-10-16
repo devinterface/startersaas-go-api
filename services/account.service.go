@@ -1,7 +1,7 @@
 package services
 
 import (
-	"devinterface.com/goaas-api-starter/models"
+	"devinterface.com/startersaas-go-api/models"
 	"github.com/Kamva/mgm/v3"
 	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/bson"

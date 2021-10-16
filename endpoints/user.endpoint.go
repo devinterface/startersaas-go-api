@@ -1,7 +1,7 @@
 package endpoints
 
 import (
-	"devinterface.com/goaas-api-starter/models"
+	"devinterface.com/startersaas-go-api/models"
 	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 
-	"devinterface.com/goaas-api-starter/models"
+	"devinterface.com/startersaas-go-api/models"
 	"github.com/stripe/stripe-go/v71"
 	"github.com/stripe/stripe-go/v71/card"
 	"github.com/stripe/stripe-go/v71/customer"

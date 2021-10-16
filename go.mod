@@ -1,4 +1,4 @@
-module devinterface.com/goaas-api-starter
+module devinterface.com/startersaas-go-api
 
 go 1.17
 

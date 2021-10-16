@@ -1,8 +1,8 @@
 package endpoints
 
 import (
-	"devinterface.com/goaas-api-starter/models"
-	"devinterface.com/goaas-api-starter/services"
+	"devinterface.com/startersaas-go-api/models"
+	"devinterface.com/startersaas-go-api/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	"go.mongodb.org/mongo-driver/bson"

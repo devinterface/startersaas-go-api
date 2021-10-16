@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"devinterface.com/goaas-api-starter/models"
+	"devinterface.com/startersaas-go-api/models"
 	"github.com/stripe/stripe-go/v71"
 )
 

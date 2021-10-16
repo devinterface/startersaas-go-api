@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"devinterface.com/goaas-api-starter/endpoints"
+	"devinterface.com/startersaas-go-api/endpoints"
 	"github.com/Kamva/mgm/v3"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"devinterface.com/goaas-api-starter/models"
+	"devinterface.com/startersaas-go-api/models"
 	"github.com/Kamva/mgm/v3"
 	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/google/uuid"
