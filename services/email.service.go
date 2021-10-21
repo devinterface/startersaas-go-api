@@ -48,7 +48,7 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 		return false, err
 	}
 	result := tpl.String()
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[MiniMarket24] Istruzioni per attivare l'account", result, []string{user.Email})
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Istruzioni per attivare l'account", result, []string{user.Email})
 	return true, err
 }
 
@@ -85,7 +85,7 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 	}
 	result := tpl.String()
 
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[MiniMarket24] Istruzioni di ripristino password", result, []string{user.Email})
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Istruzioni di ripristino password", result, []string{user.Email})
 	return true, err
 }
 
@@ -112,7 +112,7 @@ func (emailService *EmailService) SendActiveEmail(q bson.M) (success bool, err e
 		return false, err
 	}
 	result := tpl.String()
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[MiniMarket24] Attivazione completata", result, []string{user.Email})
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Attivazione completata", result, []string{user.Email})
 	return true, err
 }
 

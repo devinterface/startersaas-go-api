@@ -96,6 +96,13 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 			return nil, err
 		}
 	} else {
+
+		for _, s := range sCustomer.Subscriptions.Data {
+			if s.Status != "active" {
+				sub.Cancel(s.ID, nil)
+			}
+		}
+
 		params := &stripe.SubscriptionParams{Customer: stripe.String(sCustomer.ID), Plan: stripe.String(sPlan.ID), PaymentBehavior: stripe.String("allow_incomplete")}
 		params.AddExpand("latest_invoice.payment_intent")
 		subscription, err = sub.New(params)
