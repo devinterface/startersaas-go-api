@@ -1,6 +1,9 @@
 package endpoints
 
 import (
+	"encoding/json"
+	"io/ioutil"
+
 	"devinterface.com/startersaas-go-api/models"
 	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/fiber/v2"
@@ -184,4 +187,18 @@ func (subscriptionEndpoint *SubscriptionEndpoint) SetDefaultCreditCard(ctx *fibe
 		})
 	}
 	return ctx.JSON(sCustomer)
+}
+
+// Plans function
+func (subscriptionEndpoint *SubscriptionEndpoint) Plans(ctx *fiber.Ctx) error {
+	data, err := ioutil.ReadFile("./stripe.conf.json")
+	var payload interface{}
+	json.Unmarshal(data, &payload)
+	m := payload.(map[string]interface{})
+	if err != nil {
+		return ctx.Status(401).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	return ctx.JSON(m)
 }

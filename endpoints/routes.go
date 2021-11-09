@@ -24,6 +24,7 @@ func SetupPublicRoutes(app *fiber.App) {
 	v1.Post("/auth/sso-login", authEndpoint.SsoLogin)
 	v1.Post("/stripe/webhook", webhookEndpoint.HandleWebhook)
 	v1.Post("/fattura24", webhookEndpoint.Fattura24)
+	v1.Get("/stripe/plans", subscriptionEndpoint.Plans)
 }
 
 // SetupPrivateRoutes function

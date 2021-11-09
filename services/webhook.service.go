@@ -64,9 +64,11 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 	if account.PaymentFailedFirstAt.IsZero() {
 		account.PaymentFailedFirstAt = time.Now()
 	}
+	subscriptionRevokedAfterDays, _ := strconv.Atoi(os.Getenv("SUBSCRIPTION_REVOKED_AFTER_DAYS"))
+	account.SubscriptionRevokedAfterDays = subscriptionRevokedAfterDays
 	err = accountService.getCollection().Update(account)
-	paymentFailAfterDays, _ := strconv.Atoi(os.Getenv("PAYMENT_FAIL_AFTER_DAYS"))
-	subscriptionDeactivatedAt := account.PaymentFailedFirstAt.AddDate(0, 0, paymentFailAfterDays)
+
+	subscriptionDeactivatedAt := account.PaymentFailedFirstAt.AddDate(0, 0, subscriptionRevokedAfterDays)
 	formattedSubscriptionDeactivatedAt := strftime.Format("%d/%m/%Y", subscriptionDeactivatedAt)
 
 	go emailService.SendStripeNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[Starter SAAS] Pagamento fallito", fmt.Sprintf("Siamo spiacenti ma per qualche ragione il tuo pagamento non è andato a buon fine! Controlla le impostazioni della tua carta di credito. Il tuo account sarà sospeso il %s.", formattedSubscriptionDeactivatedAt))
