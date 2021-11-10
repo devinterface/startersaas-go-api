@@ -33,16 +33,14 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 	if err != nil {
 		return false, err
 	}
-	frontendActivationURL := os.Getenv("FRONTEND_ACTIVATION_URL")
 	t := template.Must(template.New("activationLink.email.tmpl").ParseFiles("./emails/activationLink.email.tmpl"))
 	data := struct {
 		Email                 string
 		FrontendActivationURL string
 		ConfirmationToken     string
 	}{
-		Email:                 user.Email,
-		FrontendActivationURL: frontendActivationURL,
-		ConfirmationToken:     user.ConfirmationToken,
+		Email:             user.Email,
+		ConfirmationToken: user.ConfirmationToken,
 	}
 	var tpl bytes.Buffer
 	if err = t.Execute(&tpl, data); err != nil {
@@ -68,16 +66,13 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 	if err != nil {
 		return false, err
 	}
-	frontendForgotURL := os.Getenv("FRONTEND_FORGOT_URL")
 
 	t := template.Must(template.New("forgotPassword.email.tmpl").ParseFiles("./emails/forgotPassword.email.tmpl"))
 	data := struct {
 		Email              string
-		FrontendForgotURL  string
 		PasswordResetToken string
 	}{
 		Email:              user.Email,
-		FrontendForgotURL:  frontendForgotURL,
 		PasswordResetToken: user.PasswordResetToken,
 	}
 	var tpl bytes.Buffer
