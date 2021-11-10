@@ -118,10 +118,10 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 }
 
 // Activate function
-func (authService *AuthService) Activate(token string) (success bool, err error) {
+func (authService *AuthService) Activate(token string, email string) (success bool, err error) {
 	user := &models.User{}
 	var userService = UserService{}
-	err = userService.getCollection().First(bson.M{"active": false, "confirmationToken": token}, user)
+	err = userService.getCollection().First(bson.M{"active": false, "confirmationToken": token, "email": email}, user)
 	if err != nil {
 		return false, err
 	}
@@ -137,10 +137,10 @@ func (authService *AuthService) Activate(token string) (success bool, err error)
 }
 
 // ResetPassword function
-func (authService *AuthService) ResetPassword(token string, password string) (success bool, err error) {
+func (authService *AuthService) ResetPassword(token string, password string, email string) (success bool, err error) {
 	user := &models.User{}
 	var userService = UserService{}
-	err = userService.getCollection().First(bson.M{"passwordResetToken": token}, user)
+	err = userService.getCollection().First(bson.M{"passwordResetToken": token, "email": email}, user)
 	if err != nil {
 		return false, err
 	}

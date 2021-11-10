@@ -96,11 +96,12 @@ func (authEndpoint *AuthEndpoint) Activate(ctx *fiber.Ctx) error {
 	ctx.BodyParser(&inputMap)
 	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
 		"token": "required",
+		"email": "email,required",
 	})
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
 	}
-	response, err := authService.Activate(inputMap["token"].(string))
+	response, err := authService.Activate(inputMap["token"].(string), inputMap["email"].(string))
 	if err != nil {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": err.Error(),
@@ -135,11 +136,12 @@ func (authEndpoint *AuthEndpoint) ResetPassword(ctx *fiber.Ctx) error {
 	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
 		"password":           "ascii,required",
 		"passwordResetToken": "ascii,required",
+		"email":              "email,required",
 	})
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
 	}
-	response, err := authService.ResetPassword(inputMap["passwordResetToken"].(string), inputMap["password"].(string))
+	response, err := authService.ResetPassword(inputMap["passwordResetToken"].(string), inputMap["password"].(string), inputMap["email"].(string))
 	if err != nil {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": err.Error(),

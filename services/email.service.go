@@ -2,7 +2,9 @@ package services
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/base64"
+	"fmt"
 	"net/smtp"
 	"os"
 	"strings"
@@ -10,7 +12,6 @@ import (
 	"time"
 
 	"devinterface.com/startersaas-go-api/models"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -26,8 +27,8 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 	if err != nil {
 		return false, err
 	}
-	confirmationTokenUUID, _ := uuid.NewRandom()
-	user.ConfirmationToken = confirmationTokenUUID.String()
+	p, _ := rand.Prime(rand.Reader, 20)
+	user.ConfirmationToken = fmt.Sprintf("%d", p)
 	err = userService.getCollection().Update(user)
 	if err != nil {
 		return false, err
@@ -48,7 +49,7 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 		return false, err
 	}
 	result := tpl.String()
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Istruzioni per attivare l'account", result, []string{user.Email})
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Activation code", result, []string{user.Email})
 	return true, err
 }
 
@@ -60,8 +61,8 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 	if err != nil {
 		return false, err
 	}
-	generatedUUID, _ := uuid.NewRandom()
-	user.PasswordResetToken = generatedUUID.String()
+	p, _ := rand.Prime(rand.Reader, 20)
+	user.PasswordResetToken = fmt.Sprintf("%d", p)
 	user.PasswordResetExpires = time.Now().Add(time.Hour * 3)
 	err = userService.getCollection().Update(user)
 	if err != nil {
@@ -85,7 +86,7 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 	}
 	result := tpl.String()
 
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Istruzioni di ripristino password", result, []string{user.Email})
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Reset password code", result, []string{user.Email})
 	return true, err
 }
 
@@ -112,12 +113,12 @@ func (emailService *EmailService) SendActiveEmail(q bson.M) (success bool, err e
 		return false, err
 	}
 	result := tpl.String()
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Attivazione completata", result, []string{user.Email})
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Account activated", result, []string{user.Email})
 	return true, err
 }
 
-// SendStripeNotificationEmail function
-func (emailService *EmailService) SendStripeNotificationEmail(q bson.M, subject string, mainMessage string) (success bool, err error) {
+// SendNotificationEmail function
+func (emailService *EmailService) SendNotificationEmail(q bson.M, subject string, mainMessage string) (success bool, err error) {
 	users := []models.User{}
 	var userService = UserService{}
 	err = userService.getCollection().SimpleFind(&users, q)
@@ -127,7 +128,7 @@ func (emailService *EmailService) SendStripeNotificationEmail(q bson.M, subject 
 	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
 	for _, user := range users {
 		go func(u models.User) {
-			t := template.Must(template.New("stripe.notification.tmpl").ParseFiles("./emails/stripe.notification.tmpl"))
+			t := template.Must(template.New("stripe.notification.tmpl").ParseFiles("./emails/notification.tmpl"))
 			data := struct {
 				Subject          string
 				Email            string

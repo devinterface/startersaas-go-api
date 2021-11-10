@@ -18,7 +18,6 @@ type User struct {
 	Password             string             `json:"password" bson:"password"`
 	Role                 string             `json:"role" bson:"role"`
 	ConfirmationToken    string             `json:"confirmationToken" bson:"confirmationToken"`
-	PasswordConfirmation string             `json:"passwordConfirmation" bson:"passwordConfirmation"`
 	PasswordResetToken   string             `json:"passwordResetToken" bson:"passwordResetToken"`
 	PasswordResetExpires time.Time          `json:"passwordResetExpires" bson:"passwordResetExpires"`
 	Sso                  string             `json:"sso" bson:"sso"`
