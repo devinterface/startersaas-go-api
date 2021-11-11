@@ -113,41 +113,32 @@ func (emailService *EmailService) SendActiveEmail(q bson.M) (success bool, err e
 }
 
 // SendNotificationEmail function
-func (emailService *EmailService) SendNotificationEmail(q bson.M, subject string, mainMessage string) (success bool, err error) {
-	users := []models.User{}
-	var userService = UserService{}
-	err = userService.getCollection().SimpleFind(&users, q)
+func (emailService *EmailService) SendNotificationEmail(email string, subject string, mainMessage string) (success bool, err error) {
+	t := template.Must(template.New("notification.tmpl").ParseFiles("./emails/notification.tmpl"))
+	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
+	data := struct {
+		Subject          string
+		Email            string
+		Message          string
+		FrontendLoginURL string
+	}{
+		Subject:          subject,
+		Email:            email,
+		Message:          mainMessage,
+		FrontendLoginURL: frontendLoginURL,
+	}
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, data); err != nil {
+		return false, err
+	}
+
+	result := tpl.String()
+
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), subject, result, []string{email})
 	if err != nil {
 		return false, err
 	}
-	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
-	for _, user := range users {
-		go func(u models.User) {
-			t := template.Must(template.New("stripe.notification.tmpl").ParseFiles("./emails/notification.tmpl"))
-			data := struct {
-				Subject          string
-				Email            string
-				Message          string
-				FrontendLoginURL string
-			}{
-				Subject:          subject,
-				Email:            u.Email,
-				Message:          mainMessage,
-				FrontendLoginURL: frontendLoginURL,
-			}
-			var tpl bytes.Buffer
-			if err := t.Execute(&tpl, data); err != nil {
-				return
-			}
 
-			result := tpl.String()
-
-			err := SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), subject, result, []string{u.Email})
-			if err != nil {
-				return
-			}
-		}(user)
-	}
 	return true, err
 }
 

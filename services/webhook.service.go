@@ -27,8 +27,6 @@ func (webhookService *WebhookService) HandleWebhook(payload map[string]interface
 		success, err = webhookService.PaymentSucceeded(event)
 	} else if event.Type == "invoice.payment_failed" {
 		success, err = webhookService.PaymentFailed(event)
-	} else if event.Type == "customer.subscription.trial_will_end" {
-		success, err = webhookService.TrialWillEnd(event)
 	} else if event.Type == "customer.subscription.created" {
 		success, err = webhookService.SubscriptionCreated(event)
 	} else if event.Type == "customer.subscription.updated" {
@@ -48,7 +46,9 @@ func (webhookService *WebhookService) PaymentSucceeded(event stripe.Event) (succ
 	account.PaymentFailed = false
 	account.PaymentFailedFirstAt = *new(time.Time)
 	err = accountService.getCollection().Update(account)
-	go emailService.SendNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[Starter SAAS] Pagamento completato", "Il tuo abbonamento è stato rinnovato!")
+	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Payment completed", "Congratulations, your subscription has been renewed.")
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Payment completed", fmt.Sprintf("%s - %s - paid a subscription", account.Subdomain, user.Email))
 	return err != nil, err
 }
 
@@ -71,19 +71,9 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 	err = accountService.getCollection().Update(account)
 	formattedSubscriptionDeactivatedAt := strftime.Format("%d/%m/%Y", subscriptionDeactivatedAt)
 
-	go emailService.SendNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[Starter SAAS] Pagamento fallito", fmt.Sprintf("Siamo spiacenti ma per qualche ragione il tuo pagamento non è andato a buon fine! Controlla le impostazioni della tua carta di credito. Il tuo account sarà sospeso il %s.", formattedSubscriptionDeactivatedAt))
-	return err != nil, err
-}
-
-// TrialWillEnd function
-func (webhookService *WebhookService) TrialWillEnd(event stripe.Event) (success bool, err error) {
-	status := event.Data.Object["status"]
-	if status != "active" {
-		return false, err
-	}
-	sCustomerID := event.Data.Object["customer"]
-	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
-	go emailService.SendNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[Starter SAAS] Il tuo abbonamento sta per scadere", "Il tuo abbonamento scadrà tra 3 giorni. Se non lo hai annullato, sarà rinnovato nuovamente.")
+	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Payment failed", fmt.Sprintf("Your payment wasn't successful. Please check your payment card and retry. Your subscription will be deactivated on %s.", formattedSubscriptionDeactivatedAt))
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Payment failed", fmt.Sprintf("%s - %s - has a failed payment. His subscription will be deactivated on. %s.", account.Subdomain, user.Email, formattedSubscriptionDeactivatedAt))
 	return err != nil, err
 }
 
@@ -95,7 +85,9 @@ func (webhookService *WebhookService) SubscriptionCreated(event stripe.Event) (s
 	}
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
-	go emailService.SendNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[Starter SAAS] Piano attivato", "Congratulazioni, il tuo piano è stato attivato!")
+	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] New subscription activated", "Congratulations, your subscription has been activated.")
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] New subscription activated", fmt.Sprintf("%s - %s - activated a subscription.", account.Subdomain, user.Email))
 	return err != nil, err
 }
 
@@ -107,6 +99,8 @@ func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (s
 	}
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
-	go emailService.SendNotificationEmail(bson.M{"accountId": account.ID, "role": models.AdminRole}, "[Starter SAAS] Piano aggiornato", "Congratulazioni, il tuo piano è stato aggiornato!")
+	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Subscription updated", "Congratulations, your subscription has been updated.")
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Subscription updated", fmt.Sprintf("%s - %s - updated a subscription.", account.Subdomain, user.Email))
 	return err != nil, err
 }
