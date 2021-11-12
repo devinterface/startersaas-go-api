@@ -277,33 +277,25 @@ func (subscriptionService *SubscriptionService) SetDefaultCreditCard(accountID i
 
 // RunNotifyExpiringTrials function
 func (subscriptionService *SubscriptionService) RunNotifyExpiringTrials() (err error) {
-	for _, day := range []int{3, 1, 1} {
-		params := bson.M{"active": false, "trialPeriodEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, day), operator.Gt: time.Now()}}
-		accounts, err := accountService.FindBy(params)
-		if err != nil {
-			continue
-		}
-		for _, account := range accounts {
-			user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-			go emailService.SendNotificationEmail(user.Email, fmt.Sprintf("[Starter SAAS] Trial version is expiring in %d days.", day), fmt.Sprintf("Dear user, your trial period is exipring in %d days. Please login and subscribe to a plan.", day))
-		}
+	params := bson.M{"active": false, "trialPeriodEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, 3), operator.Gt: time.Now()}}
+	accounts, err := accountService.FindBy(params)
+	for _, account := range accounts {
+		user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+		daysToExpire := int(time.Until(account.TrialPeriodEndsAt).Hours() / 24)
+		go emailService.SendNotificationEmail(user.Email, fmt.Sprintf("[Starter SAAS] Trial version is expiring in %d days.", daysToExpire), fmt.Sprintf("Dear user, your trial period is exipring in %d days. Please login and subscribe to a plan.", daysToExpire))
 	}
 	return err
 }
 
 // RunNotifyPaymentFailed function
 func (subscriptionService *SubscriptionService) RunNotifyPaymentFailed() (err error) {
-	for _, day := range []int{3, 1, 1} {
-		params := bson.M{"active": true, "paymentFailed": true, "paymentFailedSubscriptionEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, day), operator.Gt: time.Now()}}
-		accounts, err := accountService.FindBy(params)
-		if err != nil {
-			continue
-		}
-		for _, account := range accounts {
-			user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-			formattedPaymentFailedSubscriptionEndsAt := strftime.Format("%d/%m/%Y", account.PaymentFailedSubscriptionEndsAt)
-			go emailService.SendNotificationEmail(user.Email, fmt.Sprintf("[Starter SAAS] Subscription will be deactivated in %d days.", day), fmt.Sprintf("Dear user, due to a failed payment your subscription will be deactivated on %s. Please login and check your credit card.", formattedPaymentFailedSubscriptionEndsAt))
-		}
+	params := bson.M{"active": true, "paymentFailed": true, "paymentFailedSubscriptionEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, 3), operator.Gt: time.Now()}}
+	accounts, err := accountService.FindBy(params)
+	for _, account := range accounts {
+		user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+		formattedPaymentFailedSubscriptionEndsAt := strftime.Format("%d/%m/%Y", account.PaymentFailedSubscriptionEndsAt)
+		daysToExpire := int(time.Until(account.PaymentFailedSubscriptionEndsAt).Hours() / 24)
+		go emailService.SendNotificationEmail(user.Email, fmt.Sprintf("[Starter SAAS] Subscription will be deactivated in %d days.", daysToExpire), fmt.Sprintf("Dear user, due to a failed payment your subscription will be deactivated on %s. Please login and check your credit card.", formattedPaymentFailedSubscriptionEndsAt))
 	}
 	return err
 }

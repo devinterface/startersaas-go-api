@@ -49,9 +49,8 @@ func main() {
 
 	endpoints.SetupPrivateRoutes(app)
 
-	//gocron.Every(1).Day().At("01:30").Do(runNotifyExpiringTrials)
 	s := gocron.NewScheduler(time.UTC)
-	s.Every(1).Minute().Do(runScheduledNotifications)
+	s.Every(1).Day().At("00:01").Do(runScheduledNotifications)
 	s.StartAsync()
 
 	log.Fatal(app.Listen(os.Getenv("PORT")))
