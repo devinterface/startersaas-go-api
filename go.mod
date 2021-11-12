@@ -7,6 +7,7 @@ require (
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/devinterface/structomap v1.0.0
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
+	github.com/go-co-op/gocron v1.9.0
 	github.com/gofiber/fiber/v2 v2.20.1
 	github.com/gofiber/jwt/v3 v3.1.2
 	github.com/golang-jwt/jwt/v4 v4.1.0
@@ -34,6 +35,7 @@ require (
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.30.0 // indirect

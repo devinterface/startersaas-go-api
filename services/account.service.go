@@ -65,3 +65,10 @@ func (accountService *AccountService) Delete(id interface{}) (success bool, err 
 	err = accountService.getCollection().Delete(account)
 	return err == nil, err
 }
+
+// FindBy function
+func (accountService *AccountService) FindBy(q bson.M) (accounts []models.Account, err error) {
+	accounts = []models.Account{}
+	err = accountService.getCollection().SimpleFind(&accounts, q)
+	return accounts, err
+}

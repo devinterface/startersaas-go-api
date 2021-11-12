@@ -45,6 +45,7 @@ func (webhookService *WebhookService) PaymentSucceeded(event stripe.Event) (succ
 	account.Active = true
 	account.PaymentFailed = false
 	account.PaymentFailedFirstAt = *new(time.Time)
+	account.PaymentFailedSubscriptionEndsAt = *new(time.Time)
 	err = accountService.getCollection().Update(account)
 	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
 	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Payment completed", "Congratulations, your subscription has been renewed.")

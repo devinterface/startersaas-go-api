@@ -3,9 +3,12 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"devinterface.com/startersaas-go-api/endpoints"
+	"devinterface.com/startersaas-go-api/services"
 	"github.com/Kamva/mgm/v3"
+	"github.com/go-co-op/gocron"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -17,6 +20,13 @@ import (
 
 func initDabatase() {
 	mgm.SetDefaultConfig(nil, os.Getenv("DATABASE"), options.Client().ApplyURI("mongodb://localhost:27017"))
+}
+
+func runScheduledNotifications() (err error) {
+	var subscriptionService = services.SubscriptionService{}
+	subscriptionService.RunNotifyExpiringTrials()
+	subscriptionService.RunNotifyPaymentFailed()
+	return err
 }
 
 func main() {
@@ -38,6 +48,11 @@ func main() {
 	}))
 
 	endpoints.SetupPrivateRoutes(app)
+
+	//gocron.Every(1).Day().At("01:30").Do(runNotifyExpiringTrials)
+	s := gocron.NewScheduler(time.UTC)
+	s.Every(1).Minute().Do(runScheduledNotifications)
+	s.StartAsync()
 
 	log.Fatal(app.Listen(os.Getenv("PORT")))
 }
