@@ -93,6 +93,8 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 	trialDays, _ := strconv.Atoi(os.Getenv("TRIAL_DAYS"))
 	account.TrialPeriodEndsAt = time.Now().AddDate(0, 0, trialDays)
 	account.FirstSubscription = true
+	account.PrivacyAccepted = params["privacyAccepted"].(bool)
+	account.MarketingAccepted = params["marketingAccepted"].(bool)
 	err = accountColl.Create(account)
 	if err != nil {
 		return false, err

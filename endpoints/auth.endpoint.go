@@ -55,9 +55,11 @@ func (authEndpoint *AuthEndpoint) Signup(ctx *fiber.Ctx) error {
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
 	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"subdomain": "required",
-		"email":     "email,required",
-		"password":  "alpha,required",
+		"subdomain":         "required",
+		"email":             "email,required",
+		"password":          "alpha,required",
+		"privacyAccepted":   "required",
+		"marketingAccepted": "-",
 	})
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
