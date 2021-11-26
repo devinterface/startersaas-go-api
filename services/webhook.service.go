@@ -100,7 +100,17 @@ func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (s
 		return false, err
 	}
 	sCustomerID := event.Data.Object["customer"]
-	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
+	account, _ := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
+	sPlanMap := event.Data.Object["plan"].(map[string]interface{})
+
+	if event.Data.Object["cancel_at"] != nil {
+		sCancelAt := event.Data.Object["cancel_at"].(float64)
+		account.SubscriptionExpiresAt = time.Unix(int64(sCancelAt), 0)
+	} else {
+		account.SubscriptionExpiresAt = *new(time.Time)
+	}
+	account.StripePlanID = sPlanMap["id"].(string)
+	err = accountService.getCollection().Update(account)
 	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
 	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Subscription updated", "Congratulations, your subscription has been updated.")
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Subscription updated", fmt.Sprintf("%s - %s - updated a subscription.", account.Subdomain, user.Email))

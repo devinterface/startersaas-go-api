@@ -114,7 +114,6 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 		if err != nil {
 			return nil, err
 		}
-		account.FirstSubscription = false
 		err = accountService.getCollection().Update(account)
 	}
 
