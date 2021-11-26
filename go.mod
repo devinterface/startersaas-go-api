@@ -16,6 +16,7 @@ require (
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869
 	github.com/joho/godotenv v1.4.0
 	github.com/mitchellh/mapstructure v1.4.2
+	github.com/osteele/liquid v1.2.4
 	github.com/stripe/stripe-go/v71 v71.48.0
 	go.mongodb.org/mongo-driver v1.7.3
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
@@ -33,6 +34,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
+	github.com/osteele/tuesday v1.0.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
@@ -47,5 +49,6 @@ require (
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/yaml.v2 v2.2.8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

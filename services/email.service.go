@@ -1,17 +1,17 @@
 package services
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
 	"net/smtp"
 	"os"
 	"strings"
-	"text/template"
 	"time"
 
 	"devinterface.com/startersaas-go-api/models"
+	"github.com/osteele/liquid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -33,20 +33,15 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 	if err != nil {
 		return false, err
 	}
-	t := template.Must(template.New("activationLink.email.tmpl").ParseFiles("./emails/activationLink.email.tmpl"))
-	data := struct {
-		Email                 string
-		FrontendActivationURL string
-		ConfirmationToken     string
-	}{
-		Email:             user.Email,
-		ConfirmationToken: user.ConfirmationToken,
+
+	engine := liquid.NewEngine()
+	template, err := ioutil.ReadFile("./emails/activationLink.email.liquid")
+	bindings := map[string]interface{}{
+		"email":             user.Email,
+		"confirmationToken": user.ConfirmationToken,
 	}
-	var tpl bytes.Buffer
-	if err = t.Execute(&tpl, data); err != nil {
-		return false, err
-	}
-	result := tpl.String()
+	result, err := engine.ParseAndRenderString(string(template), bindings)
+
 	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Activation code", result, []string{user.Email})
 	return true, err
 }
@@ -67,19 +62,13 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 		return false, err
 	}
 
-	t := template.Must(template.New("forgotPassword.email.tmpl").ParseFiles("./emails/forgotPassword.email.tmpl"))
-	data := struct {
-		Email              string
-		PasswordResetToken string
-	}{
-		Email:              user.Email,
-		PasswordResetToken: user.PasswordResetToken,
+	engine := liquid.NewEngine()
+	template, err := ioutil.ReadFile("./emails/forgotPassword.email.liquid")
+	bindings := map[string]interface{}{
+		"email":              user.Email,
+		"passwordResetToken": user.PasswordResetToken,
 	}
-	var tpl bytes.Buffer
-	if err = t.Execute(&tpl, data); err != nil {
-		return false, err
-	}
-	result := tpl.String()
+	result, err := engine.ParseAndRenderString(string(template), bindings)
 
 	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Reset password code", result, []string{user.Email})
 	return true, err
@@ -95,44 +84,29 @@ func (emailService *EmailService) SendActiveEmail(q bson.M) (success bool, err e
 	}
 	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
 
-	t := template.Must(template.New("activate.email.tmpl").ParseFiles("./emails/activate.email.tmpl"))
-	data := struct {
-		Email            string
-		FrontendLoginURL string
-	}{
-		Email:            user.Email,
-		FrontendLoginURL: frontendLoginURL,
+	engine := liquid.NewEngine()
+	template, err := ioutil.ReadFile("./emails/activate.email.liquid")
+	bindings := map[string]interface{}{
+		"email":            user.Email,
+		"frontendLoginURL": frontendLoginURL,
 	}
-	var tpl bytes.Buffer
-	if err = t.Execute(&tpl, data); err != nil {
-		return false, err
-	}
-	result := tpl.String()
+	result, err := engine.ParseAndRenderString(string(template), bindings)
 	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Account activated", result, []string{user.Email})
 	return true, err
 }
 
 // SendNotificationEmail function
-func (emailService *EmailService) SendNotificationEmail(email string, subject string, mainMessage string) (success bool, err error) {
-	t := template.Must(template.New("notification.tmpl").ParseFiles("./emails/notification.tmpl"))
+func (emailService *EmailService) SendNotificationEmail(email string, subject string, message string) (success bool, err error) {
+	engine := liquid.NewEngine()
+	template, err := ioutil.ReadFile("./emails/notification.email.liquid")
 	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
-	data := struct {
-		Subject          string
-		Email            string
-		Message          string
-		FrontendLoginURL string
-	}{
-		Subject:          subject,
-		Email:            email,
-		Message:          mainMessage,
-		FrontendLoginURL: frontendLoginURL,
+	bindings := map[string]interface{}{
+		"subject":          subject,
+		"email":            email,
+		"message":          message,
+		"frontendLoginURL": frontendLoginURL,
 	}
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, data); err != nil {
-		return false, err
-	}
-
-	result := tpl.String()
+	result, err := engine.ParseAndRenderString(string(template), bindings)
 
 	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), subject, result, []string{email})
 	if err != nil {
