@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -114,6 +115,7 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 	}
 
 	go emailService.SendActivationEmail(bson.M{"_id": user.ID})
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] New subscriber", fmt.Sprintf("%s - %s - has been subscribed", account.Subdomain, user.Email))
 
 	return true, err
 }
