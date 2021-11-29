@@ -75,7 +75,7 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 
 	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
 	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Payment failed", fmt.Sprintf("Your payment wasn't successful. Please check your payment card and retry. Your subscription will be deactivated on %s.", formattedSubscriptionDeactivatedAt))
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Payment failed", fmt.Sprintf("%s - %s - has a failed payment. His subscription will be deactivated on. %s.", account.Subdomain, user.Email, formattedSubscriptionDeactivatedAt))
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Payment failed", fmt.Sprintf("%s - %s - has a failed payment. His subscription will be deactivated on %s.", account.Subdomain, user.Email, formattedSubscriptionDeactivatedAt))
 	return err != nil, err
 }
 
