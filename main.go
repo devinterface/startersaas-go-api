@@ -19,7 +19,7 @@ import (
 )
 
 func initDabatase() {
-	mgm.SetDefaultConfig(nil, os.Getenv("DATABASE"), options.Client().ApplyURI("mongodb://localhost:27017"))
+	mgm.SetDefaultConfig(nil, os.Getenv("DATABASE"), options.Client().ApplyURI(os.Getenv("DATABASE_URI")))
 }
 
 func runScheduledNotifications() (err error) {
