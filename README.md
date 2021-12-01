@@ -1,3 +1,6 @@
+# Starter SaaS GO API
+
+This project contains everything you need to setup a fully featured SaaS API in 5 minutes.
 # Installation
 Make sure you have MongoDB (4+) installed and running.
 
@@ -35,7 +38,9 @@ customer.subscription.created
 customer.subscription.updated
 ```
 
-Configure Stripe to retry failed payments for X days, and then cancel the subscription. Remember this value, it will be used in the ```.env``` file.
+Configure Stripe to retry failed payments for X days (https://dashboard.stripe.com/settings/billing/automatic Smart Retries section), and then cancel the subscription. 
+
+Remember this value, it will be used in the `.env` file in `PAYMENT_FAILED_RETRY_DAYS` variable.
 
 # Configuring .env
 
@@ -50,19 +55,17 @@ Below the meaning of every environment variable you can setup.
 
 `DATABASE_URI="mongodb://localhost:27017"` the MongoDB connection string
 
-`JWT_SECRET="aaabbbccc"` keep this value secrect and very long and random
+`JWT_SECRET="aaabbbccc"` set this value secrect, very long and random
 
 `JWT_EXPIRE="1d"` # how long the JWT token last
 
-`FRONTEND_LOGIN_URL="http://localhost:5000/auth/login"` raplace http://localhost:5000 with the real production host
-
-`FRONTEND_FORGOT_URL="http://localhost:5000/auth/reset-password"` raplace http://localhost:5000 with the real production host
+`FRONTEND_LOGIN_URL="http://localhost:5000/auth/login"` raplace http://localhost:5000 with the real production host of the React frontend
 
 `MAILER="localhost:1025"` the SMTP mailer connection string
 
-`DEFAULT_EMAIL_FROM="noreply@startersaas.com"` send every email from this address
+`DEFAULT_EMAIL_FROM="noreply@startersaas.com"` send every notification email from this address
 
-`LOCALE="it"` the deafalt locale for registered users
+`LOCALE="en"` the deafalt locale for registered users
 
 `STRIPE_SECRET_KEY="sk_test_xyz"` the Stripe secret key
 
@@ -79,9 +82,9 @@ Below the meaning of every environment variable you can setup.
 
 # Configuring stripe.conf.json
 
-In this file you have to add the stripe API public key, in the ```publicKey```field
+In this file you have to add the stripe API public key, in the `publicKey` field
 
-Then for every product you want to sell, copy it's price_id (usually starts with price_xxx) and paste it in the id key.
+Then for every product you want to sell, copy it's price_id (usually starts with price_xxx) and paste it in the "id" key.
 
 ```
 {
@@ -105,7 +108,9 @@ Then for every product you want to sell, copy it's price_id (usually starts with
 }
 ```
 
-Then sets its title, its price (in cents, the same you have configured in Stripe) and the list of features you want to show in the frontend pricing table. Finally set ```"monthly":true``` if your plan is billed on monthly basis, otherwise we consider it billed yearly.
+Then sets its title, its price (in cents, the same you have configured in Stripe) and the list of features you want to show in the frontend pricing table. 
+
+Finally set `"monthly":true` if your plan is billed on monthly basis, otherwise we consider it billed yearly.
 
 
 # Features
