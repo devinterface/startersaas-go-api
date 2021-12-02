@@ -153,5 +153,5 @@ Author: Stefano Mancini <stefano.mancini@devinterface.com>
 
 Company: DevInterface SRL (https://www.devinterface.com)
 
-Feel free to send me an email if you have issues or bugs.
+Issues repository: https://github.com/devinterface/startersaas-issues
 
