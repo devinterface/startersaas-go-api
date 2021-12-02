@@ -147,3 +147,11 @@ Finally set `"monthly":true` if your plan is billed on monthly basis, otherwise 
   - failed payments
   - account suspension due to failed payments
 
+### CREDITS
+
+Author: Stefano Mancini <stefano.mancini@devinterface.com> 
+
+Company: DevInterface SRL (https://www.devinterface.com)
+
+Feel free to send me an email if you have issues or bugs.
+
