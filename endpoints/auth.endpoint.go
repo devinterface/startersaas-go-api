@@ -57,7 +57,7 @@ func (authEndpoint *AuthEndpoint) Signup(ctx *fiber.Ctx) error {
 	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
 		"subdomain":         "required",
 		"email":             "email,required",
-		"password":          "alpha,required",
+		"password":          "required",
 		"privacyAccepted":   "required",
 		"marketingAccepted": "-",
 	})
