@@ -22,15 +22,14 @@ func (subscriptionEndpoint *SubscriptionEndpoint) Subscribe(ctx *fiber.Ctx) erro
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
 	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"sourceToken": "ascii,required",
-		"planId":      "ascii,required",
+		"planId": "ascii,required",
 	})
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
 	}
 
 	me, _ := userEndpoint.CurrentUser(ctx)
-	subscription, err := subscriptionService.Subscribe(me.ID, inputMap["planId"].(string), inputMap["sourceToken"].(string))
+	subscription, err := subscriptionService.Subscribe(me.ID, inputMap["planId"].(string))
 	if err != nil {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": err.Error(),
@@ -113,30 +112,21 @@ func (subscriptionEndpoint *SubscriptionEndpoint) CancelSubscription(ctx *fiber.
 }
 
 // AddCreditCard function
-func (subscriptionEndpoint *SubscriptionEndpoint) AddCreditCard(ctx *fiber.Ctx) error {
+func (subscriptionEndpoint *SubscriptionEndpoint) CreateSetupIntent(ctx *fiber.Ctx) error {
 	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
 	}
 
-	var inputMap = make(map[string]interface{})
-	ctx.BodyParser(&inputMap)
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"sourceToken": "ascii,required",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
-	}
-
 	account, _ := userEndpoint.CurrentAccount(ctx)
-	sCustomer, err := subscriptionService.AddCreditCard(account.ID, inputMap["sourceToken"].(string))
+	setupIntent, err := subscriptionService.CreateSetupIntent(account.ID)
 	if err != nil {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
-	return ctx.JSON(sCustomer)
+	return ctx.JSON(setupIntent)
 }
 
 // RemoveCreditCard function
