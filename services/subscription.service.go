@@ -10,12 +10,11 @@ import (
 	"github.com/Kamva/mgm/v3/operator"
 	strftime "github.com/jehiah/go-strftime"
 	"github.com/stripe/stripe-go/v71"
-	"github.com/stripe/stripe-go/v71/card"
 	"github.com/stripe/stripe-go/v71/customer"
 	"github.com/stripe/stripe-go/v71/invoice"
 	"github.com/stripe/stripe-go/v71/paymentmethod"
-	"github.com/stripe/stripe-go/v71/paymentsource"
 	"github.com/stripe/stripe-go/v71/plan"
+	"github.com/stripe/stripe-go/v71/setupintent"
 	"github.com/stripe/stripe-go/v71/sub"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -57,7 +56,7 @@ func (subscriptionService *SubscriptionService) CreateCustomer(userID interface{
 }
 
 // Subscribe function
-func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, planID string, sourceToken string) (subscription *stripe.Subscription, err error) {
+func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, planID string) (subscription *stripe.Subscription, err error) {
 	user := &models.User{}
 	err = userService.getCollection().FindByID(userID, user)
 	if err != nil {
@@ -81,11 +80,6 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 	sCustomer, _ := customer.Get(account.StripeCustomerID, &stripe.CustomerParams{})
 
-	noCrediCard := sCustomer.Sources.TotalCount == 0
-	if noCrediCard {
-		subscriptionService.AddCreditCard(account.ID, sourceToken)
-	}
-
 	sPlan, _ := plan.Get(planID, &stripe.PlanParams{})
 	var activeSubscription *stripe.Subscription
 	for _, s := range sCustomer.Subscriptions.Data {
@@ -108,7 +102,7 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 			}
 		}
 
-		params := &stripe.SubscriptionParams{Customer: stripe.String(sCustomer.ID), Plan: stripe.String(sPlan.ID), PaymentBehavior: stripe.String("allow_incomplete")}
+		params := &stripe.SubscriptionParams{Customer: stripe.String(sCustomer.ID), Plan: stripe.String(sPlan.ID), PaymentBehavior: stripe.String("default_incomplete")}
 		params.AddExpand("latest_invoice.payment_intent")
 		subscription, err = sub.New(params)
 		if err != nil {
@@ -200,8 +194,8 @@ func (subscriptionService *SubscriptionService) CancelSubscription(accountID int
 	return sCustomer, err
 }
 
-// AddCreditCard function
-func (subscriptionService *SubscriptionService) AddCreditCard(accountID interface{}, sourceToken string) (sCustomer *stripe.Customer, err error) {
+// CreateSetupIntent function
+func (subscriptionService *SubscriptionService) CreateSetupIntent(accountID interface{}) (setupIntent *stripe.SetupIntent, err error) {
 	account := &models.Account{}
 	err = accountService.getCollection().FindByID(accountID, account)
 	if err != nil {
@@ -212,23 +206,15 @@ func (subscriptionService *SubscriptionService) AddCreditCard(accountID interfac
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
-	params := &stripe.CustomerSourceParams{
-		Customer: stripe.String(account.StripeCustomerID),
-		Source: &stripe.SourceParams{
-			Token: stripe.String(sourceToken),
+	params := &stripe.SetupIntentParams{
+		Customer: &account.StripeCustomerID,
+		PaymentMethodTypes: []*string{
+			stripe.String("card"),
 		},
 	}
+	setupIntent, _ = setupintent.New(params)
 
-	_, err = paymentsource.New(params)
-
-	if err != nil {
-		return nil, err
-	}
-
-	customerParams := &stripe.CustomerParams{DefaultSource: stripe.String(sourceToken)}
-	sCustomer, err = customer.Update(account.StripeCustomerID, customerParams)
-
-	return sCustomer, err
+	return setupIntent, err
 }
 
 // RemoveCreditCard function
@@ -243,10 +229,10 @@ func (subscriptionService *SubscriptionService) RemoveCreditCard(accountID inter
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
 
-	cardParams := &stripe.CardParams{
-		Customer: stripe.String(account.StripeCustomerID),
-	}
-	_, err = card.Del(cardID, cardParams)
+	paymentmethod.Detach(
+		cardID,
+		nil,
+	)
 
 	if err != nil {
 		return nil, err
@@ -267,8 +253,8 @@ func (subscriptionService *SubscriptionService) SetDefaultCreditCard(accountID i
 		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
-
-	customerParams := &stripe.CustomerParams{DefaultSource: stripe.String(cardID)}
+	customerInvoiceSettingsParams := &stripe.CustomerInvoiceSettingsParams{DefaultPaymentMethod: stripe.String(cardID)}
+	customerParams := &stripe.CustomerParams{InvoiceSettings: customerInvoiceSettingsParams}
 	sCustomer, err = customer.Update(account.StripeCustomerID, customerParams)
 
 	return sCustomer, err
