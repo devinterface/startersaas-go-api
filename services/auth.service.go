@@ -45,28 +45,17 @@ func (authService *AuthService) Login(email string, cleanPassword string, refres
 		}
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": user.Email,
-		"role":  user.Role,
-		"exp":   time.Now().Add(time.Hour * 72).Unix(),
-	})
-
-	key := os.Getenv("JWT_SECRET")
-
-	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString([]byte(key))
-
 	message := map[string]string{
 		"success": "true",
 		"message": "Enjoy your token!",
-		"token":   tokenString,
+		"token":   generateToken(*user),
 	}
 
 	return message, err
 }
 
 // Signup function
-func (authService *AuthService) Signup(params map[string]interface{}) (success bool, err error) {
+func (authService *AuthService) Signup(params map[string]interface{}, signupWithActivate bool) (response map[string]string, err error) {
 	account := &models.Account{}
 	accountColl := mgm.CollectionByName("account")
 	account.Subdomain = strcase.ToKebab(params["subdomain"].(string))
@@ -75,7 +64,7 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 	existentAccount := &models.Account{}
 	accountColl.First(bson.M{"subdomain": account.Subdomain}, existentAccount)
 	if existentAccount.ID != primitive.NilObjectID {
-		return false, errors.New("subdomain is invalid or already taken")
+		return nil, errors.New("subdomain is invalid or already taken")
 	}
 
 	user := &models.User{}
@@ -86,7 +75,7 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 	existentUser := &models.User{}
 	userColl.First(bson.M{"email": user.Email}, existentUser)
 	if existentUser.ID != primitive.NilObjectID {
-		return false, errors.New("email is invalid or already taken")
+		return nil, errors.New("email is invalid or already taken")
 	}
 
 	// create account
@@ -97,12 +86,12 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 	account.MarketingAccepted = params["marketingAccepted"].(bool)
 	err = accountColl.Create(account)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	// create user
 	user.Role = models.AdminRole
-	user.Active = false
+	user.Active = signupWithActivate
 	user.Language = os.Getenv("LOCALE")
 	ssoUUID, _ := uuid.NewRandom()
 	user.Sso = ssoUUID.String()
@@ -111,13 +100,19 @@ func (authService *AuthService) Signup(params map[string]interface{}) (success b
 	user.AccountID = account.ID
 	err = userColl.Create(user)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	go emailService.SendActivationEmail(bson.M{"_id": user.ID})
+	if signupWithActivate {
+		go emailService.SendActivationEmail(bson.M{"_id": user.ID})
+		message := map[string]string{
+			"token": generateToken(*user),
+		}
+		return message, err
+	}
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] New subscriber", fmt.Sprintf("%s - %s - has been subscribed", account.Subdomain, user.Email))
 
-	return true, err
+	return nil, err
 }
 
 // Activate function
@@ -163,6 +158,16 @@ func (authService *AuthService) Sso(sso string) (response map[string]string, err
 	coll := mgm.CollectionByName("user")
 	coll.First(bson.M{"active": true, "sso": sso}, user)
 
+	message := map[string]string{
+		"success": "true",
+		"message": "Enjoy your token!",
+		"token":   generateToken(*user),
+	}
+
+	return message, err
+}
+
+func generateToken(user models.User) (tokenString string) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": user.Email,
 		"role":  user.Role,
@@ -170,15 +175,6 @@ func (authService *AuthService) Sso(sso string) (response map[string]string, err
 	})
 
 	key := os.Getenv("JWT_SECRET")
-
-	// Sign and get the complete encoded token as a string using the secret
-	tokenString, err := token.SignedString([]byte(key))
-
-	message := map[string]string{
-		"success": "true",
-		"message": "Enjoy your token!",
-		"token":   tokenString,
-	}
-
-	return message, err
+	tokenString, _ = token.SignedString([]byte(key))
+	return tokenString
 }
