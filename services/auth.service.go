@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/google/uuid"
 	"github.com/iancoleman/strcase"
+	"github.com/kataras/i18n"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
@@ -103,6 +103,8 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 		return nil, err
 	}
 
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr("en", "authService.signup.subject"), i18n.Tr("en", "authService.signup.messageAdmin", map[string]string{"Subdomain": account.Subdomain, "Email": user.Email}))
+
 	if signupWithActivate {
 		go emailService.SendActivationEmail(bson.M{"_id": user.ID})
 		message := map[string]string{
@@ -110,7 +112,6 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 		}
 		return message, err
 	}
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] New subscriber", fmt.Sprintf("%s - %s - has been subscribed", account.Subdomain, user.Email))
 
 	return nil, err
 }
