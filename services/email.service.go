@@ -11,12 +11,24 @@ import (
 	"time"
 
 	"devinterface.com/startersaas-go-api/models"
+	"github.com/Kamva/mgm/v3"
 	"github.com/osteele/liquid"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 // EmailService struct
 type EmailService struct{ BaseService }
+
+func (emailService *EmailService) getCollection() (collection *mgm.Collection) {
+	coll := mgm.CollectionByName("email")
+	return coll
+}
+
+func loadEmail(code string, lang string) (email *models.Email, err error) {
+	email = &models.Email{}
+	err = emailService.getCollection().First(bson.M{"code": code, "lang": lang}, email)
+	return email, err
+}
 
 // SendActivationEmail function
 func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, err error) {
@@ -35,14 +47,15 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 	}
 
 	engine := liquid.NewEngine()
-	template, err := ioutil.ReadFile("./emails/activationLink.email.liquid")
+	emailModel, _ := loadEmail("activationLink", "en")
+
 	bindings := map[string]interface{}{
 		"email":             user.Email,
 		"confirmationToken": user.ConfirmationToken,
 	}
-	result, err := engine.ParseAndRenderString(string(template), bindings)
+	result, err := engine.ParseAndRenderString(string(emailModel.Body), bindings)
 
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Activation code", result, []string{user.Email})
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
 	return true, err
 }
 
@@ -63,14 +76,14 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 	}
 
 	engine := liquid.NewEngine()
-	template, err := ioutil.ReadFile("./emails/forgotPassword.email.liquid")
+	emailModel, _ := loadEmail("forgotPassword", "en")
 	bindings := map[string]interface{}{
 		"email":              user.Email,
 		"passwordResetToken": user.PasswordResetToken,
 	}
-	result, err := engine.ParseAndRenderString(string(template), bindings)
+	result, err := engine.ParseAndRenderString(string(emailModel.Body), bindings)
 
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Reset password code", result, []string{user.Email})
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
 	return true, err
 }
 
@@ -85,20 +98,21 @@ func (emailService *EmailService) SendActiveEmail(q bson.M) (success bool, err e
 	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
 
 	engine := liquid.NewEngine()
-	template, err := ioutil.ReadFile("./emails/activate.email.liquid")
+	emailModel, _ := loadEmail("activate", "en")
 	bindings := map[string]interface{}{
 		"email":            user.Email,
 		"frontendLoginURL": frontendLoginURL,
 	}
-	result, err := engine.ParseAndRenderString(string(template), bindings)
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), "[Starter SAAS] Account activated", result, []string{user.Email})
+	result, err := engine.ParseAndRenderString(string(emailModel.Body), bindings)
+	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
 	return true, err
 }
 
 // SendNotificationEmail function
 func (emailService *EmailService) SendNotificationEmail(email string, subject string, message string) (success bool, err error) {
 	engine := liquid.NewEngine()
-	template, err := ioutil.ReadFile("./emails/notification.email.liquid")
+
+	emailModel, _ := loadEmail("notification", "en")
 	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
 	bindings := map[string]interface{}{
 		"subject":          subject,
@@ -106,7 +120,7 @@ func (emailService *EmailService) SendNotificationEmail(email string, subject st
 		"message":          message,
 		"frontendLoginURL": frontendLoginURL,
 	}
-	result, err := engine.ParseAndRenderString(string(template), bindings)
+	result, err := engine.ParseAndRenderString(string(emailModel.Body), bindings)
 
 	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), subject, result, []string{email})
 	if err != nil {
@@ -156,4 +170,20 @@ func SendMail(addr, from, subject, body string, to []string) error {
 		return err
 	}
 	return c.Quit()
+}
+
+func (emailService *EmailService) StoreEmails() (err error) {
+	for _, code := range []string{"activate", "activationLink", "forgotPassword", "notification"} {
+		storedEmail, _ := loadEmail(code, "en")
+		if storedEmail.Code == "" {
+			template, _ := ioutil.ReadFile(fmt.Sprintf("./emails/%s.email.liquid", code))
+			email := &models.Email{}
+			email.Body = string(template)
+			email.Code = code
+			email.Lang = "en"
+			email.Subject = fmt.Sprintf("[Starter SaaS] %s", code)
+			err = emailService.getCollection().Create(email)
+		}
+	}
+	return err
 }
