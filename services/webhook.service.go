@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"devinterface.com/startersaas-go-api/models"
 	"github.com/Kamva/mgm/v3"
 	strftime "github.com/jehiah/go-strftime"
+	"github.com/kataras/i18n"
 	"github.com/stripe/stripe-go/v71"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -24,11 +24,11 @@ func (webhookService *WebhookService) HandleWebhook(payload map[string]interface
 		mgm.CollectionByName("webhook").Create(webhook)
 	}(payload)
 	if event.Type == "invoice.payment_succeeded" {
-		success, err = webhookService.PaymentSucceeded(event)
+		success, err = webhookService.PaymentSuccesfull(event)
 	} else if event.Type == "invoice.payment_failed" {
 		success, err = webhookService.PaymentFailed(event)
 	} else if event.Type == "customer.subscription.created" {
-		success, err = webhookService.SubscriptionCreated(event)
+		success, err = webhookService.NewSubscription(event)
 	} else if event.Type == "customer.subscription.updated" {
 		success, err = webhookService.SubscriptionUpdated(event)
 	}
@@ -36,7 +36,7 @@ func (webhookService *WebhookService) HandleWebhook(payload map[string]interface
 }
 
 // PaymentSucceeded function
-func (webhookService *WebhookService) PaymentSucceeded(event stripe.Event) (success bool, err error) {
+func (webhookService *WebhookService) PaymentSuccesfull(event stripe.Event) (success bool, err error) {
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	if err != nil {
@@ -49,8 +49,8 @@ func (webhookService *WebhookService) PaymentSucceeded(event stripe.Event) (succ
 	account.TrialPeriodEndsAt = *new(time.Time)
 	err = accountService.getCollection().Update(account)
 	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Payment completed", "Congratulations, your subscription has been renewed.")
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Payment completed", fmt.Sprintf("%s - %s - paid a subscription", account.Subdomain, user.Email))
+	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentSuccessful.subject"), i18n.Tr(user.Language, "webhookService.paymentSuccessful.message"), user.Language)
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentSuccessful.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentSuccessful.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 	return err != nil, err
 }
 
@@ -74,13 +74,14 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 	formattedSubscriptionDeactivatedAt := strftime.Format("%d/%m/%Y", subscriptionDeactivatedAt)
 
 	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Payment failed", fmt.Sprintf("Your payment wasn't successful. Please check your payment card and retry. Your subscription will be deactivated on %s.", formattedSubscriptionDeactivatedAt))
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Payment failed", fmt.Sprintf("%s - %s - has a failed payment. His subscription will be deactivated on %s.", account.Subdomain, user.Email, formattedSubscriptionDeactivatedAt))
+
+	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentFailed.subject"), i18n.Tr(user.Language, "webhookService.paymentFailed.message", map[string]interface{}{"Date": formattedSubscriptionDeactivatedAt}), user.Language)
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentFailed.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentFailed.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email, "Date": formattedSubscriptionDeactivatedAt}), os.Getenv("LOCALE"))
 	return err != nil, err
 }
 
 // SubscriptionCreated function
-func (webhookService *WebhookService) SubscriptionCreated(event stripe.Event) (success bool, err error) {
+func (webhookService *WebhookService) NewSubscription(event stripe.Event) (success bool, err error) {
 	status := event.Data.Object["status"]
 	if status != "active" {
 		return false, err
@@ -88,8 +89,9 @@ func (webhookService *WebhookService) SubscriptionCreated(event stripe.Event) (s
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] New subscription activated", "Congratulations, your subscription has been activated.")
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] New subscription activated", fmt.Sprintf("%s - %s - activated a subscription.", account.Subdomain, user.Email))
+
+	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.newSubscription.subject"), i18n.Tr(user.Language, "webhookService.newSubscription.message"), user.Language)
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.newSubscription.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.newSubscription.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 	return err != nil, err
 }
 
@@ -112,7 +114,7 @@ func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (s
 	account.StripePlanID = sPlanMap["id"].(string)
 	err = accountService.getCollection().Update(account)
 	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-	go emailService.SendNotificationEmail(user.Email, "[Starter SAAS] Subscription updated", "Congratulations, your subscription has been updated.")
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), "[Starter SAAS] Subscription updated", fmt.Sprintf("%s - %s - updated a subscription.", account.Subdomain, user.Email))
+	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.subscriptionUpdated.subject"), i18n.Tr(user.Language, "webhookService.subscriptionUpdated.message"), user.Language)
+	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.subscriptionUpdated.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.subscriptionUpdated.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 	return err != nil, err
 }

@@ -47,7 +47,7 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 	}
 
 	engine := liquid.NewEngine()
-	emailModel, _ := loadEmail("activationLink", "en")
+	emailModel, _ := loadEmail("activationLink", user.Language)
 
 	bindings := map[string]interface{}{
 		"email":             user.Email,
@@ -76,7 +76,7 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 	}
 
 	engine := liquid.NewEngine()
-	emailModel, _ := loadEmail("forgotPassword", "en")
+	emailModel, _ := loadEmail("forgotPassword", user.Language)
 	bindings := map[string]interface{}{
 		"email":              user.Email,
 		"passwordResetToken": user.PasswordResetToken,
@@ -98,7 +98,7 @@ func (emailService *EmailService) SendActiveEmail(q bson.M) (success bool, err e
 	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
 
 	engine := liquid.NewEngine()
-	emailModel, _ := loadEmail("activate", "en")
+	emailModel, _ := loadEmail("activate", user.Language)
 	bindings := map[string]interface{}{
 		"email":            user.Email,
 		"frontendLoginURL": frontendLoginURL,
@@ -109,10 +109,10 @@ func (emailService *EmailService) SendActiveEmail(q bson.M) (success bool, err e
 }
 
 // SendNotificationEmail function
-func (emailService *EmailService) SendNotificationEmail(email string, subject string, message string) (success bool, err error) {
+func (emailService *EmailService) SendNotificationEmail(email string, subject string, message string, lang string) (success bool, err error) {
 	engine := liquid.NewEngine()
 
-	emailModel, _ := loadEmail("notification", "en")
+	emailModel, _ := loadEmail("notification", lang)
 	frontendLoginURL := os.Getenv("FRONTEND_LOGIN_URL")
 	bindings := map[string]interface{}{
 		"subject":          subject,
