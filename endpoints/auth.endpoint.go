@@ -1,6 +1,8 @@
 package endpoints
 
 import (
+	"os"
+
 	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -64,7 +66,7 @@ func (authEndpoint *AuthEndpoint) Signup(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
 	}
-	response, err := authService.Signup(inputMap)
+	response, err := authService.Signup(inputMap, os.Getenv("SIGNUP_WITH_ACTIVATE") == "true")
 	if err != nil {
 		return ctx.Status(422).JSON(fiber.Map{
 			"message": err.Error(),
