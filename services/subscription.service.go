@@ -90,7 +90,8 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 	}
 
 	if activeSubscription != nil {
-		params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(false), Plan: stripe.String(sPlan.ID), ProrationBehavior: stripe.String("always_invoice")}
+		params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(false), Plan: stripe.String(sPlan.ID), ProrationBehavior: stripe.String("always_invoice"), PaymentBehavior: stripe.String("default_incomplete")}
+		params.AddExpand("latest_invoice.payment_intent")
 		subscription, err = sub.Update(activeSubscription.ID, params)
 		if err != nil {
 			return nil, err

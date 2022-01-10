@@ -56,10 +56,12 @@ func (webhookService *WebhookService) PaymentSuccesfull(event stripe.Event) (suc
 
 // PaymentFailed function
 func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success bool, err error) {
-	status := event.Data.Object["payment_intent"]
-	if status != nil {
+	paymentIntent := event.Data.Object["payment_intent"]
+	billingReason := event.Data.Object["billing_reason"]
+	if paymentIntent != nil && billingReason != "subscription_update" {
 		return false, err
 	}
+
 	sCustomerID := event.Data.Object["customer"]
 	account, _ := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	account.PaymentFailed = true
@@ -75,7 +77,9 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 
 	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
 
-	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentFailed.subject"), i18n.Tr(user.Language, "webhookService.paymentFailed.message", map[string]interface{}{"Date": formattedSubscriptionDeactivatedAt}), user.Language)
+	stripeHostedInvoiceUrl := event.Data.Object["hosted_invoice_url"]
+
+	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentFailed.subject"), i18n.Tr(user.Language, "webhookService.paymentFailed.message", map[string]interface{}{"Date": formattedSubscriptionDeactivatedAt, "StripeHostedInvoiceUrl": stripeHostedInvoiceUrl}), user.Language)
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentFailed.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentFailed.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email, "Date": formattedSubscriptionDeactivatedAt}), os.Getenv("LOCALE"))
 	return err != nil, err
 }

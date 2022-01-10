@@ -55,7 +55,7 @@ Below the meaning of every environment variable you can setup.
 
 `DATABASE_URI="mongodb://localhost:27017"` the MongoDB connection string
 
-`JWT_SECRET="aaabbbccc"` set this value secrect, very long and random
+`JWT_SECRET="aaabbbccc"` set this value secret, very long and random
 
 `JWT_EXPIRE="1d"` # how long the JWT token last
 
@@ -65,7 +65,7 @@ Below the meaning of every environment variable you can setup.
 
 `DEFAULT_EMAIL_FROM="noreply@startersaas.com"` send every notification email from this address
 
-`LOCALE="en"` the deafalt locale for registered users
+`LOCALE="en"` the default locale for registered users
 
 `STRIPE_SECRET_KEY="sk_test_xyz"` the Stripe secret key
 
@@ -77,7 +77,9 @@ Below the meaning of every environment variable you can setup.
 
 `PAYMENT_FAILED_RETRY_DAYS=7` how many days a user can work after the first failed payment (and before Stripe cancel the subscription)
 
-`NOTIFIED_ADMIN_EMAIL="info@startersaas.com"` we notify admins when some events occur, like a new subscription, a failed payment and so on
+`NOTIFIED_ADMIN_EMAIL="info@startersaas.com"` we notify this email when some events occur, like a new subscription, a failed payment and so on
+
+`SIGNUP_WITH_ACTIVATE=true` set this value as true if you want to log the new registered user direclty, without asking for email confirmation
 
 
 # Configuring stripe.conf.json

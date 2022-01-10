@@ -13,7 +13,7 @@ webhookService:
     messageAdmin: "{{.Email}} - {{.Subdomain}} updated a subscription."
   paymentFailed:
     subject: "[Starter SAAS] Payment failed"
-    message: "Your payment wasn\"t successful.Please check your payment card and retry.Your subscription will be deactivated on {{.Date}}."
+    message: "Your payment wasn't successful. Please go to this <a href=\"{{.StripeHostedInvoiceUrl}}\" target=\"_blank\">url</a> to pay your subscription, otherwise your subscription will be deactivated on {{.Date}}."
     messageAdmin: "{{.Email}} - {{.Subdomain}} has a failed payment. His subscription will be deactivated on {{.Date}}."
 authService:
   signup:
