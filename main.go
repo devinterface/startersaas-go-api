@@ -29,6 +29,11 @@ func runScheduledNotifications() (err error) {
 	return err
 }
 
+func storeEmails() {
+	var emailService = services.EmailService{}
+	emailService.StoreEmails()
+}
+
 func main() {
 	app := fiber.New()
 	app.Use(cors.New(cors.Config{
@@ -39,6 +44,7 @@ func main() {
 		Level: compress.LevelBestSpeed,
 	}))
 	initDabatase()
+	storeEmails()
 
 	endpoints.SetupPublicRoutes(app)
 

@@ -2,13 +2,14 @@ package services
 
 import (
 	"errors"
-	"fmt"
+	"math"
 	"os"
 	"time"
 
 	"devinterface.com/startersaas-go-api/models"
 	"github.com/Kamva/mgm/v3/operator"
 	strftime "github.com/jehiah/go-strftime"
+	"github.com/kataras/i18n"
 	"github.com/stripe/stripe-go/v71"
 	"github.com/stripe/stripe-go/v71/customer"
 	"github.com/stripe/stripe-go/v71/invoice"
@@ -89,7 +90,8 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 	}
 
 	if activeSubscription != nil {
-		params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(false), Plan: stripe.String(sPlan.ID)}
+		params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(false), Plan: stripe.String(sPlan.ID), ProrationBehavior: stripe.String("always_invoice"), PaymentBehavior: stripe.String("default_incomplete")}
+		params.AddExpand("latest_invoice.payment_intent")
 		subscription, err = sub.Update(activeSubscription.ID, params)
 		if err != nil {
 			return nil, err
@@ -266,8 +268,8 @@ func (subscriptionService *SubscriptionService) RunNotifyExpiringTrials() (err e
 	accounts, err := accountService.FindBy(params)
 	for _, account := range accounts {
 		user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-		daysToExpire := int(time.Until(account.TrialPeriodEndsAt).Hours() / 24)
-		go emailService.SendNotificationEmail(user.Email, fmt.Sprintf("[Starter SAAS] Trial version is expiring in %d days.", daysToExpire), fmt.Sprintf("Dear user, your trial period is exipring in %d days. Please login and subscribe to a plan.", daysToExpire))
+		daysToExpire := int(math.Round(time.Until(account.TrialPeriodEndsAt).Hours() / 24))
+		go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "subscriptionService.runNotifyExpiringTrials.subject", map[string]interface{}{"DaysToExpire": daysToExpire}), i18n.Tr(user.Language, "subscriptionService.runNotifyExpiringTrials.message", map[string]interface{}{"DaysToExpire": daysToExpire}), user.Language)
 	}
 	return err
 }
@@ -279,8 +281,8 @@ func (subscriptionService *SubscriptionService) RunNotifyPaymentFailed() (err er
 	for _, account := range accounts {
 		user, _ := userService.OneBy(bson.M{"accountId": account.ID})
 		formattedPaymentFailedSubscriptionEndsAt := strftime.Format("%d/%m/%Y", account.PaymentFailedSubscriptionEndsAt)
-		daysToExpire := int(time.Until(account.PaymentFailedSubscriptionEndsAt).Hours() / 24)
-		go emailService.SendNotificationEmail(user.Email, fmt.Sprintf("[Starter SAAS] Subscription will be deactivated in %d days.", daysToExpire), fmt.Sprintf("Dear user, due to a failed payment your subscription will be deactivated on %s. Please login and check your credit card.", formattedPaymentFailedSubscriptionEndsAt))
+		daysToExpire := int(math.Round(time.Until(account.PaymentFailedSubscriptionEndsAt).Hours() / 24))
+		go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "subscriptionService.runNotifyPaymentFailed.subject", map[string]interface{}{"DaysToExpire": daysToExpire}), i18n.Tr(user.Language, "subscriptionService.runNotifyPaymentFailed.message", map[string]interface{}{"Date": formattedPaymentFailedSubscriptionEndsAt}), user.Language)
 	}
 	return err
 }
