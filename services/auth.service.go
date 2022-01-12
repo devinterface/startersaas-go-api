@@ -92,7 +92,11 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 	// create user
 	user.Role = models.AdminRole
 	user.Active = signupWithActivate
-	user.Language = os.Getenv("LOCALE")
+	if params["language"] != nil {
+		user.Language = params["language"].(string)
+	} else {
+		user.Language = os.Getenv("LOCALE")
+	}
 	ssoUUID, _ := uuid.NewRandom()
 	user.Sso = ssoUUID.String()
 	hash, _ := hashPassword(params["password"].(string))

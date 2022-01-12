@@ -62,6 +62,7 @@ func (authEndpoint *AuthEndpoint) Signup(ctx *fiber.Ctx) error {
 		"password":          "required",
 		"privacyAccepted":   "required",
 		"marketingAccepted": "-",
+		"language":          "-",
 	})
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
