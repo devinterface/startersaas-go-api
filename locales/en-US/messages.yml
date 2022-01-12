@@ -19,7 +19,6 @@ authService:
   signup:
     subject: "[Starter SAAS] New subscriber"
     messageAdmin: "{{.Email}} - {{.Subdomain}} has been subscribed."
-ciao: "HELLO"
 subscriptionService:
   runNotifyExpiringTrials:
     subject: "[Starter SAAS] Trial version is expiring in {{.DaysToExpire}} day/s"

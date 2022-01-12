@@ -1,0 +1,28 @@
+webhookService:
+  paymentSuccessful:
+    subject: "[Starter SAAS] Pagamento completato"
+    message: "Congratulazioni, il tuo abbonamento è stato rinnovato."
+    messageAdmin: "{{.Email}} - {{.Subdomain}} ha pagato un abbonamento."
+  newSubscription:
+    subject: "[Starter SAAS] Un nuovo abbonamento è stato attivato"
+    message: "Congratulazioni, il tuo abbonamento è stato attivato."
+    messageAdmin: "{{.Email}} - {{.Subdomain}} ha attivato un abbonamento."
+  subscriptionUpdated:
+    subject: "[Starter SAAS] Un abbonamento è stato aggiornato"
+    message: "Congratulazioni, il tuo abbonamento è stato aggiornato."
+    messageAdmin: "{{.Email}} - {{.Subdomain}} ha aggiornato un abbonamento."
+  paymentFailed:
+    subject: "[Starter SAAS] Un pagamento è fallito"
+    message: "Caro utente, un tuo pagamento non è andato a buon fine. Se pregato di andare al più presto <a href=\"{{.StripeHostedInvoiceUrl}}\" target=\"_blank\">qui</a> per pagare la rata, altrimenti il tuo abbonamento sarà disattivato il {{.Date}}."
+    messageAdmin: "{{.Email}} - {{.Subdomain}} ha un pagamento fallito. Il suo abbonamento sarà disattivato il {{.Date}}."
+authService:
+  signup:
+    subject: "[Starter SAAS] Nuovo iscritto"
+    messageAdmin: "{{.Email}} - {{.Subdomain}} si è iscritto."
+subscriptionService:
+  runNotifyExpiringTrials:
+    subject: "[Starter SAAS] Il periodo di prova scadrà in {{.DaysToExpire}} giorno/i"
+    message: "Caro utente, il tuo periodo di prova scadrà in {{.DaysToExpire}} giorno/i. Sei pregato di accedere alla piattaforma e sottoscrivere un abbonamento per poter continuare."
+  runNotifyPaymentFailed:
+    subject: "[Starter SAAS] L'abbonamento sarà disattivato in {{.DaysToExpire}} giorno/i"
+    message: "Caro utente, a causa di un pagamento fallito, il tuo abbonamento sarà disattivato il {{.Date}}. Sei pregato di accedere e sistemare il metodo di pagamento."
