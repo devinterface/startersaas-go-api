@@ -27,6 +27,9 @@ func (emailService *EmailService) getCollection() (collection *mgm.Collection) {
 func loadEmail(code string, lang string) (email *models.Email, err error) {
 	email = &models.Email{}
 	err = emailService.getCollection().First(bson.M{"code": code, "lang": lang}, email)
+	if email.Code == "" {
+		err = emailService.getCollection().First(bson.M{"code": code, "lang": os.Getenv("LOCALE")}, email)
+	}
 	return email, err
 }
 
