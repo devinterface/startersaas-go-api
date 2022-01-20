@@ -41,3 +41,30 @@ func ShowAccountSerializer() *AccountSerializer {
 	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "CreatedAt", "UpdatedAt")
 	return a
 }
+
+const (
+	SubscriptionPendingActivation = "pending_activation"
+	SubscriptionTrial             = "trial"
+	SubscriptionPaymentFailed     = "payment_failed"
+	SubscriptionDeactivated       = "deactivated"
+	SubscriptionActive            = "active"
+)
+
+func (account *Account) SubscriptionStatus() string {
+	if !account.Active {
+		return SubscriptionPendingActivation
+	}
+	if account.TrialPeriodEndsAt.After(time.Now()) {
+		return SubscriptionTrial
+	}
+	if account.PaymentFailed && account.PaymentFailedSubscriptionEndsAt.After(time.Now()) {
+		return SubscriptionPaymentFailed
+	}
+	if account.PaymentFailed && account.PaymentFailedSubscriptionEndsAt.Before(time.Now()) {
+		return SubscriptionDeactivated
+	}
+	if account.SubscriptionExpiresAt.Before(time.Now()) {
+		return SubscriptionDeactivated
+	}
+	return SubscriptionActive
+}

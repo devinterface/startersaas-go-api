@@ -44,3 +44,22 @@ func (baseEndpoint *BaseEndpoint) Can(ctx *fiber.Ctx, role string) (success bool
 	me, _ := userService.OneBy(q)
 	return me.Role == role
 }
+
+func (baseEndpoint *BaseEndpoint) ActiveSubscription(ctx *fiber.Ctx) (isActive bool) {
+	currentAccount, _ := baseEndpoint.CurrentAccount(ctx)
+	return currentAccount.SubscriptionStatus() != models.SubscriptionDeactivated || currentAccount.SubscriptionStatus() != models.SubscriptionPendingActivation
+}
+
+func buildMeta(page int64, limit int64, count int64) (meta map[string]int64) {
+	meta = make(map[string]int64)
+	meta["page"] = page
+	meta["limit"] = limit
+	meta["count"] = count
+	if page > 1 {
+		meta["prev"] = page - 1
+	}
+	if page*limit < count {
+		meta["next"] = page + 1
+	}
+	return meta
+}
