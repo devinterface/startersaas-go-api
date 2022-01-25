@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"devinterface.com/startersaas-go-api/middlewares"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -30,7 +31,7 @@ func SetupPublicRoutes(app *fiber.App) {
 // SetupPrivateRoutes function
 func SetupPrivateRoutes(app *fiber.App) {
 	api := app.Group("/api")
-	v1 := api.Group("/v1")
+	v1 := api.Group("/v1", middlewares.LoadUserAccount)
 
 	v1.Post("/auth/refresh-token", authEndpoint.RefreshToken)
 	v1.Get("/accounts/:id", accountEndpoint.ByID)
