@@ -40,23 +40,25 @@ func (filteredQuery FilteredQuery) GetPage() (limit int64) {
 }
 
 func (filteredQuery FilteredQuery) GetSort() (sortMap bson.M) {
+	sortMap = bson.M{}
 	if filteredQuery.Sort != "" {
-		sortMap = bson.M{}
 		if strings.HasPrefix(filteredQuery.Sort, "-") {
 			field := strings.Split(filteredQuery.Sort, "-")[1]
 			sortMap[field] = -1
 		} else {
 			sortMap[filteredQuery.Sort] = 1
 		}
+	} else {
+		sortMap["created_at"] = -1
 	}
 	return sortMap
 }
 
-var filterOperators = []string{"$eq", "$in", "$gt", "$gte", "$lt", "$lte", "$regex", "$ne", "$text"}
+var filterOperators = []string{"$eq", "$gt", "$gte", "$lt", "$lte", "$regex", "$ne", "$text"}
 
 func (filteredQuery FilteredQuery) GetFilter() (queryParams bson.M) {
+	queryParams = bson.M{}
 	if filteredQuery.Filter != nil {
-		queryParams = bson.M{}
 		for _, filterParam := range filteredQuery.Filter {
 			splittedFilterParam := strings.Split(filterParam, ":")
 			if len(splittedFilterParam) != 3 {
