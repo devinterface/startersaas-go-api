@@ -47,8 +47,11 @@ func (webhookService *WebhookService) PaymentSuccesfull(event stripe.Event) (suc
 	account.PaymentFailedFirstAt = *new(time.Time)
 	account.PaymentFailedSubscriptionEndsAt = *new(time.Time)
 	account.TrialPeriodEndsAt = *new(time.Time)
-	err = accountService.getCollection().Update(account)
-	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+	_ = accountService.getCollection().Update(account)
+	user, err := userService.OneBy(bson.M{"accountId": account.ID})
+	if err != nil {
+		return false, err
+	}
 	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentSuccessful.subject"), i18n.Tr(user.Language, "webhookService.paymentSuccessful.message"), user.Language)
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentSuccessful.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentSuccessful.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 	return err != nil, err
@@ -61,9 +64,11 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 	if paymentIntent != nil && billingReason != "subscription_update" {
 		return false, err
 	}
-
 	sCustomerID := event.Data.Object["customer"]
-	account, _ := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
+	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
+	if err != nil {
+		return false, err
+	}
 	account.PaymentFailed = true
 	if account.PaymentFailedFirstAt.IsZero() {
 		account.PaymentFailedFirstAt = time.Now()
@@ -71,14 +76,13 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 	paymentFailedRetryDays, _ := strconv.Atoi(os.Getenv("PAYMENT_FAILED_RETRY_DAYS"))
 	subscriptionDeactivatedAt := account.PaymentFailedFirstAt.AddDate(0, 0, paymentFailedRetryDays)
 	account.PaymentFailedSubscriptionEndsAt = subscriptionDeactivatedAt
-
-	err = accountService.getCollection().Update(account)
+	_ = accountService.getCollection().Update(account)
 	formattedSubscriptionDeactivatedAt := strftime.Format("%d/%m/%Y", subscriptionDeactivatedAt)
-
-	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-
+	user, err := userService.OneBy(bson.M{"accountId": account.ID})
+	if err != nil {
+		return false, err
+	}
 	stripeHostedInvoiceUrl := event.Data.Object["hosted_invoice_url"]
-
 	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentFailed.subject"), i18n.Tr(user.Language, "webhookService.paymentFailed.message", map[string]interface{}{"Date": formattedSubscriptionDeactivatedAt, "StripeHostedInvoiceUrl": stripeHostedInvoiceUrl}), user.Language)
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentFailed.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentFailed.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email, "Date": formattedSubscriptionDeactivatedAt}), os.Getenv("LOCALE"))
 	return err != nil, err
@@ -92,8 +96,13 @@ func (webhookService *WebhookService) NewSubscription(event stripe.Event) (succe
 	}
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
-	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
-
+	if err != nil {
+		return false, err
+	}
+	user, err := userService.OneBy(bson.M{"accountId": account.ID})
+	if err != nil {
+		return false, err
+	}
 	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.newSubscription.subject"), i18n.Tr(user.Language, "webhookService.newSubscription.message"), user.Language)
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.newSubscription.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.newSubscription.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 	return err != nil, err
@@ -106,9 +115,11 @@ func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (s
 		return false, err
 	}
 	sCustomerID := event.Data.Object["customer"]
-	account, _ := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
+	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
+	if err != nil {
+		return false, err
+	}
 	sPlanMap := event.Data.Object["plan"].(map[string]interface{})
-
 	if event.Data.Object["cancel_at"] != nil {
 		sCancelAt := event.Data.Object["cancel_at"].(float64)
 		account.SubscriptionExpiresAt = time.Unix(int64(sCancelAt), 0)
@@ -116,8 +127,11 @@ func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (s
 		account.SubscriptionExpiresAt = *new(time.Time)
 	}
 	account.StripePlanID = sPlanMap["id"].(string)
-	err = accountService.getCollection().Update(account)
-	user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+	_ = accountService.getCollection().Update(account)
+	user, err := userService.OneBy(bson.M{"accountId": account.ID})
+	if err != nil {
+		return false, err
+	}
 	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.subscriptionUpdated.subject"), i18n.Tr(user.Language, "webhookService.subscriptionUpdated.message"), user.Language)
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.subscriptionUpdated.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.subscriptionUpdated.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 	return err != nil, err
