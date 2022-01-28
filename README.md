@@ -61,7 +61,13 @@ Below the meaning of every environment variable you can setup.
 
 `FRONTEND_LOGIN_URL="http://localhost:5000/auth/login"` raplace http://localhost:5000 with the real production host of the React frontend
 
-`MAILER="localhost:1025"` the SMTP mailer connection string
+`MAILER_HOST='localhost'` the SMTP server host
+
+`MAILER_PORT=1025` the SMTP server port
+
+`MAILER_USERNAME='foo'` the SMTP server username
+
+`MAILER_PASSWORD='bar'` the SMTP server password
 
 `DEFAULT_EMAIL_FROM="noreply@startersaas.com"` send every notification email from this address
 
