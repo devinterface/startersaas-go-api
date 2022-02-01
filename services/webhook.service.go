@@ -1,6 +1,8 @@
 package services
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"time"
@@ -10,6 +12,7 @@ import (
 	strftime "github.com/jehiah/go-strftime"
 	"github.com/kataras/i18n"
 	"github.com/stripe/stripe-go/v71"
+	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -127,6 +130,18 @@ func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (s
 		account.SubscriptionExpiresAt = *new(time.Time)
 	}
 	account.StripePlanID = sPlanMap["id"].(string)
+
+	data, _ := ioutil.ReadFile("./stripe.conf.json")
+	var payload interface{}
+	json.Unmarshal(data, &payload)
+	plans := payload.(map[string]interface{})
+	found := funk.Filter(plans["plans"].([]interface{}), func(x interface{}) bool {
+		i := x.(map[string]interface{})
+		return i["id"] == account.StripePlanID
+	}).([]interface{})
+	plan := found[0].(map[string]interface{})
+	account.PlanType = plan["planType"].(string)
+
 	_ = accountService.getCollection().Update(account)
 	user, err := userService.OneBy(bson.M{"accountId": account.ID})
 	if err != nil {

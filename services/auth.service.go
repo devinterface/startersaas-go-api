@@ -84,6 +84,7 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 	account.TrialPeriodEndsAt = time.Now().AddDate(0, 0, trialDays)
 	account.PrivacyAccepted = params["privacyAccepted"].(bool)
 	account.MarketingAccepted = params["marketingAccepted"].(bool)
+	account.PlanType = os.Getenv("STARTER_PLAN_TYPE")
 	err = accountColl.Create(account)
 	if err != nil {
 		return nil, err

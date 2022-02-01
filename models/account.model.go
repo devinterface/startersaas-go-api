@@ -28,6 +28,7 @@ type Account struct {
 	TrialPeriodEndsAt               time.Time `json:"trialPeriodEndsAt" bson:"trialPeriodEndsAt"`
 	StripePlanID                    string    `json:"stripePlanId" bson:"stripePlanId"`
 	SubscriptionExpiresAt           time.Time `json:"subcriptionExpiresAt" bson:"subcriptionExpiresAt"`
+	PlanType                        string    `json:"planType" bson:"planType"`
 }
 
 // AccountSerializer function
@@ -38,7 +39,7 @@ type AccountSerializer struct {
 // ShowAccountSerializer function
 func ShowAccountSerializer() *AccountSerializer {
 	a := &AccountSerializer{structomap.New()}
-	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "CreatedAt", "UpdatedAt")
+	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "PlanType", "CreatedAt", "UpdatedAt")
 	return a
 }
 

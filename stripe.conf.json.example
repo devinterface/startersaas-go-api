@@ -18,7 +18,8 @@
         "-",
         "-"
       ],
-      "monthly": true
+      "monthly": true,
+      "planType": "starter"
     },
     {
       "id": "xxx2",
@@ -37,7 +38,8 @@
         "-",
         "-"
       ],
-      "monthly": true
+      "monthly": true,
+      "planType": "basic"
     },
     {
       "id": "xxx2",
@@ -56,7 +58,8 @@
         "4 sponsorizzazioni sui social (budget a carico del cliente)",
         "Report mensile"
       ],
-      "monthly": true
+      "monthly": true,
+      "planType": "pro"
     }
   ]
 }
