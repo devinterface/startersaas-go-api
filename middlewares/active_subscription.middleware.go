@@ -7,7 +7,7 @@ import (
 
 var ActiveSubscription = func(ctx *fiber.Ctx) (err error) {
 	currentAccount := ctx.Locals("currentAccount").(*models.Account)
-	if currentAccount.SubscriptionStatus() != models.SubscriptionDeactivated || currentAccount.SubscriptionStatus() != models.SubscriptionPendingActivation {
+	if currentAccount.SubscriptionStatus != models.SubscriptionDeactivated {
 		return ctx.Next()
 	} else {
 		return ctx.Status(401).JSON(fiber.Map{

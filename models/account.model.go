@@ -29,6 +29,7 @@ type Account struct {
 	StripePlanID                    string    `json:"stripePlanId" bson:"stripePlanId"`
 	SubscriptionExpiresAt           time.Time `json:"subcriptionExpiresAt" bson:"subcriptionExpiresAt"`
 	PlanType                        string    `json:"planType" bson:"planType"`
+	SubscriptionStatus              string    `json:"subscriptionStatus" bson:"subscriptionStatus"`
 }
 
 // AccountSerializer function
@@ -39,33 +40,31 @@ type AccountSerializer struct {
 // ShowAccountSerializer function
 func ShowAccountSerializer() *AccountSerializer {
 	a := &AccountSerializer{structomap.New()}
-	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "PlanType", "CreatedAt", "UpdatedAt")
+	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "PlanType", "SubscriptionStatus", "CreatedAt", "UpdatedAt")
 	return a
 }
 
 const (
-	SubscriptionPendingActivation = "pending_activation"
-	SubscriptionTrial             = "trial"
-	SubscriptionPaymentFailed     = "payment_failed"
-	SubscriptionDeactivated       = "deactivated"
-	SubscriptionActive            = "active"
+	SubscriptionTrial         = "trial"
+	SubscriptionPaymentFailed = "payment_failed"
+	SubscriptionDeactivated   = "deactivated"
+	SubscriptionActive        = "active"
 )
 
-func (account *Account) SubscriptionStatus() string {
-	if !account.Active {
-		return SubscriptionPendingActivation
-	}
+func (account *Account) Saving() error {
 	if account.TrialPeriodEndsAt.After(time.Now()) {
-		return SubscriptionTrial
+		account.SubscriptionStatus = SubscriptionTrial
+	} else if account.PaymentFailed && account.PaymentFailedSubscriptionEndsAt.After(time.Now()) {
+		account.SubscriptionStatus = SubscriptionPaymentFailed
+	} else if account.PaymentFailed && account.PaymentFailedSubscriptionEndsAt.Before(time.Now()) {
+		account.SubscriptionStatus = SubscriptionDeactivated
+	} else if account.SubscriptionExpiresAt.Before(time.Now()) {
+		account.SubscriptionStatus = SubscriptionDeactivated
+	} else {
+		account.SubscriptionStatus = SubscriptionActive
 	}
-	if account.PaymentFailed && account.PaymentFailedSubscriptionEndsAt.After(time.Now()) {
-		return SubscriptionPaymentFailed
+	if err := account.DefaultModel.Saving(); err != nil {
+		return err
 	}
-	if account.PaymentFailed && account.PaymentFailedSubscriptionEndsAt.Before(time.Now()) {
-		return SubscriptionDeactivated
-	}
-	if account.SubscriptionExpiresAt.Before(time.Now()) {
-		return SubscriptionDeactivated
-	}
-	return SubscriptionActive
+	return nil
 }
