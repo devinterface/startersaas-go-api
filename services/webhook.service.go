@@ -45,7 +45,6 @@ func (webhookService *WebhookService) PaymentSuccesfull(event stripe.Event) (suc
 	if err != nil {
 		return false, err
 	}
-	account.Active = true
 	account.PaymentFailed = false
 	account.PaymentFailedFirstAt = *new(time.Time)
 	account.PaymentFailedSubscriptionEndsAt = *new(time.Time)

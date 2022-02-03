@@ -19,7 +19,6 @@ type Account struct {
 	CompanyPhone                    string    `json:"companyPhone" bson:"companyPhone"`
 	CompanyEmail                    string    `json:"companyEmail" bson:"companyEmail"`
 	StripeCustomerID                string    `json:"stripeCustomerId" bson:"stripeCustomerId"`
-	Active                          bool      `json:"active" bson:"active"`
 	PaymentFailed                   bool      `json:"paymentFailed" bson:"paymentFailed"`
 	PaymentFailedFirstAt            time.Time `json:"paymentFailedFirstAt" bson:"paymentFailedFirstAt"`
 	PaymentFailedSubscriptionEndsAt time.Time `json:"paymentFailedSubscriptionEndsAt" bson:"paymentFailedSubscriptionEndsAt"`
@@ -39,7 +38,7 @@ type AccountSerializer struct {
 // ShowAccountSerializer function
 func ShowAccountSerializer() *AccountSerializer {
 	a := &AccountSerializer{structomap.New()}
-	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "PlanType", "CreatedAt", "UpdatedAt").AddFunc("SubscriptionStatus", func(a interface{}) interface{} {
+	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "PlanType", "CreatedAt", "UpdatedAt").AddFunc("SubscriptionStatus", func(a interface{}) interface{} {
 		account := a.(*Account)
 		return account.SubscriptionStatus()
 	})

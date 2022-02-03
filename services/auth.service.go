@@ -79,7 +79,6 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 	}
 
 	// create account
-	account.Active = false
 	trialDays, _ := strconv.Atoi(os.Getenv("TRIAL_DAYS"))
 	account.TrialPeriodEndsAt = time.Now().AddDate(0, 0, trialDays)
 	account.PrivacyAccepted = params["privacyAccepted"].(bool)
