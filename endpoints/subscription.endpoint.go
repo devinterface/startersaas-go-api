@@ -65,9 +65,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerInvoices(ctx *fiber
 	account, _ := userEndpoint.CurrentAccount(ctx)
 	sCustomerInvoices, err := subscriptionService.GetCustomerInvoices(account.ID)
 	if err != nil {
-		return ctx.Status(401).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		ctx.JSON([]string{})
+	}
+	if len(sCustomerInvoices) == 0 {
+		return ctx.JSON([]string{})
 	}
 	return ctx.JSON(sCustomerInvoices)
 }
@@ -82,9 +83,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerCards(ctx *fiber.Ct
 	account, _ := userEndpoint.CurrentAccount(ctx)
 	sCustomerCards, err := subscriptionService.GetCustomerCards(account.ID)
 	if err != nil {
-		return ctx.Status(401).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		ctx.JSON([]string{})
+	}
+	if len(sCustomerCards) == 0 {
+		return ctx.JSON([]string{})
 	}
 	return ctx.JSON(sCustomerCards)
 }
