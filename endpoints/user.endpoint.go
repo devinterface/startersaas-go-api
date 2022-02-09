@@ -91,7 +91,7 @@ func (userEndpoint *UserEndpoint) GenerateSso(ctx *fiber.Ctx) error {
 
 // Index function
 func (userEndpoint *UserEndpoint) Index(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -111,7 +111,7 @@ func (userEndpoint *UserEndpoint) Index(ctx *fiber.Ctx) error {
 // Create function
 func (userEndpoint *UserEndpoint) Create(ctx *fiber.Ctx) error {
 	me, _ := userEndpoint.CurrentUser(ctx)
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -144,7 +144,7 @@ func (userEndpoint *UserEndpoint) Create(ctx *fiber.Ctx) error {
 
 // Update function
 func (userEndpoint *UserEndpoint) Update(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -178,7 +178,7 @@ func (userEndpoint *UserEndpoint) Delete(ctx *fiber.Ctx) error {
 	me, _ := userEndpoint.CurrentUser(ctx)
 	can := userEndpoint.Can(ctx, models.AdminRole)
 	can = can && me.ID.Hex() != ctx.Params("id")
-	if can == false {
+	if !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})

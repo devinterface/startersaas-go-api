@@ -23,7 +23,7 @@ func (accountEndpoint *AccountEndpoint) ByID(ctx *fiber.Ctx) error {
 
 // Update function
 func (accountEndpoint *AccountEndpoint) Update(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
