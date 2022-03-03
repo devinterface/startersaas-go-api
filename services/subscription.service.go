@@ -264,7 +264,7 @@ func (subscriptionService *SubscriptionService) SetDefaultCreditCard(accountID i
 
 // RunNotifyExpiringTrials function
 func (subscriptionService *SubscriptionService) RunNotifyExpiringTrials() (err error) {
-	params := bson.M{"active": false, "trialPeriodEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, 3), operator.Gt: time.Now()}}
+	params := bson.M{"trialPeriodEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, 3), operator.Gt: time.Now()}}
 	accounts, err := accountService.FindBy(params)
 	for _, account := range accounts {
 		user, _ := userService.OneBy(bson.M{"accountId": account.ID})
@@ -276,7 +276,7 @@ func (subscriptionService *SubscriptionService) RunNotifyExpiringTrials() (err e
 
 // RunNotifyPaymentFailed function
 func (subscriptionService *SubscriptionService) RunNotifyPaymentFailed() (err error) {
-	params := bson.M{"active": true, "paymentFailed": true, "paymentFailedSubscriptionEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, 3), operator.Gt: time.Now()}}
+	params := bson.M{"paymentFailed": true, "paymentFailedSubscriptionEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, 3), operator.Gt: time.Now()}}
 	accounts, err := accountService.FindBy(params)
 	for _, account := range accounts {
 		user, _ := userService.OneBy(bson.M{"accountId": account.ID})
