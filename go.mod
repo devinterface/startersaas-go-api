@@ -19,6 +19,8 @@ require (
 	github.com/mitchellh/mapstructure v1.4.2
 	github.com/osteele/liquid v1.2.4
 	github.com/stripe/stripe-go/v71 v71.48.0
+	github.com/thoas/go-funk v0.9.1
+	github.com/xhit/go-simple-mail/v2 v2.10.0
 	go.mongodb.org/mongo-driver v1.7.3
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac // indirect

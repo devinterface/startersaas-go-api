@@ -1,62 +1,53 @@
 {
-  "publicKey": "yyyy",
+  "publicKey": "pk_test_XYZ",
   "plans": [
     {
-      "id": "xxx1",
-      "title": "Starter - Piano Mensile",
-      "price": 199,
+      "id": "price_XYZ",
+      "title": "Starter",
+      "price": 4.90,
       "currency": "EUR",
       "features": [
-        "Piano editoriale mensile",
-        "1 post Facebook/settimana",
-        "1 post Instagram/settimana",
-        "1 Facebook story/settimana",
-        "1 Instagram story/settimana",
-        "1 articolo il blog ottimizzato SEO",
-        "-",
-        "-",
-        "-",
-        "-"
+        "1 project",
+        "0 tags",
+        "star entries",
+        "1 user",
+        "3 days data retention",
+        "no push notifications"
       ],
-      "monthly": true
+      "monthly": true,
+      "planType": "starter"
     },
     {
-      "id": "xxx2",
-      "title": "Base - Piano Mensile",
-      "price": 399,
+      "id": "price_XYZ",
+      "title": "Basic",
+      "price": 9.90,
       "currency": "EUR",
       "features": [
-        "Piano editoriale mensile",
-        "2 post Facebook/settimana",
-        "2 post Instagram/settimana",
-        "2 Facebook stories/settimana",
-        "2 Instagram stories/settimana",
-        "1 articolo blog ottimizzato SEO",
-        "Ideazione linea grafica IG",
-        "2 sponsorizzazioni sui social (budget a carico del cliente)",
-        "-",
-        "-"
+        "infinite projects",
+        "infinite tags",
+        "star entries",
+        "1 user",
+        "20 days data retention",
+        "no push notifications"
       ],
-      "monthly": true
+      "monthly": true,
+      "planType": "basic"
     },
     {
-      "id": "xxx2",
-      "title": "Pro - Piano Mensile",
-      "price": 699,
+      "id": "price_XYZ",
+      "title": "Pro",
+      "price": 14.90,
       "currency": "EUR",
       "features": [
-        "Piano editoriale mensile",
-        "2 post Facebook/settimana",
-        "2 post Instagram/settimana",
-        "2 Facebook stories/settimana",
-        "2 Instagram stories/settimana",
-        "2 articoli blog ottimizzato SEO",
-        "Ottimizzazione pagine social",
-        "Ideazione linea grafica IG",
-        "4 sponsorizzazioni sui social (budget a carico del cliente)",
-        "Report mensile"
+        "infinite projects",
+        "infinite tags",
+        "star entries",
+        "1 user",
+        "50 days data retention",
+        "push notifications"
       ],
-      "monthly": true
+      "monthly": true,
+      "planType": "pro"
     }
   ]
 }

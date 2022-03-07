@@ -14,7 +14,7 @@ type SubscriptionEndpoint struct{ BaseEndpoint }
 
 // Subscribe function
 func (subscriptionEndpoint *SubscriptionEndpoint) Subscribe(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -40,7 +40,7 @@ func (subscriptionEndpoint *SubscriptionEndpoint) Subscribe(ctx *fiber.Ctx) erro
 
 // GetCustomer function
 func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomer(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -57,7 +57,7 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomer(ctx *fiber.Ctx) er
 
 // GetCustomerInvoices function
 func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerInvoices(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -65,16 +65,17 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerInvoices(ctx *fiber
 	account, _ := userEndpoint.CurrentAccount(ctx)
 	sCustomerInvoices, err := subscriptionService.GetCustomerInvoices(account.ID)
 	if err != nil {
-		return ctx.Status(401).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		ctx.JSON([]string{})
+	}
+	if len(sCustomerInvoices) == 0 {
+		return ctx.JSON([]string{})
 	}
 	return ctx.JSON(sCustomerInvoices)
 }
 
 // GetCustomerCards function
 func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerCards(ctx *fiber.Ctx) error {
-	if can := userEndpoint.Can(ctx, models.AdminRole); can != true {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
 		})
@@ -82,9 +83,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerCards(ctx *fiber.Ct
 	account, _ := userEndpoint.CurrentAccount(ctx)
 	sCustomerCards, err := subscriptionService.GetCustomerCards(account.ID)
 	if err != nil {
-		return ctx.Status(401).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		ctx.JSON([]string{})
+	}
+	if len(sCustomerCards) == 0 {
+		return ctx.JSON([]string{})
 	}
 	return ctx.JSON(sCustomerCards)
 }
@@ -101,6 +103,11 @@ func (subscriptionEndpoint *SubscriptionEndpoint) CancelSubscription(ctx *fiber.
 	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
 		"subscriptionId": "ascii,required",
 	})
+	if err != nil {
+		return ctx.Status(401).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
 	account, _ := userEndpoint.CurrentAccount(ctx)
 	sCustomer, err := subscriptionService.CancelSubscription(account.ID, inputMap["subscriptionId"].(string))
 	if err != nil {

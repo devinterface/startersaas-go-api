@@ -2,17 +2,19 @@ package services
 
 import (
 	"crypto/rand"
-	"encoding/base64"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
-	"net/smtp"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"devinterface.com/startersaas-go-api/models"
 	"github.com/Kamva/mgm/v3"
 	"github.com/osteele/liquid"
+	mail "github.com/xhit/go-simple-mail/v2"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -58,7 +60,7 @@ func (emailService *EmailService) SendActivationEmail(q bson.M) (success bool, e
 	}
 	result, err := engine.ParseAndRenderString(string(emailModel.Body), bindings)
 
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
+	err = SendMail(os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
 	return true, err
 }
 
@@ -86,7 +88,7 @@ func (emailService *EmailService) SendForgotPasswordEmail(q bson.M) (success boo
 	}
 	result, err := engine.ParseAndRenderString(string(emailModel.Body), bindings)
 
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
+	err = SendMail(os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
 	return true, err
 }
 
@@ -107,7 +109,7 @@ func (emailService *EmailService) SendActiveEmail(q bson.M) (success bool, err e
 		"frontendLoginURL": frontendLoginURL,
 	}
 	result, err := engine.ParseAndRenderString(string(emailModel.Body), bindings)
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
+	err = SendMail(os.Getenv("DEFAULT_EMAIL_FROM"), emailModel.Subject, result, []string{user.Email})
 	return true, err
 }
 
@@ -125,7 +127,7 @@ func (emailService *EmailService) SendNotificationEmail(email string, subject st
 	}
 	result, err := engine.ParseAndRenderString(string(emailModel.Body), bindings)
 
-	err = SendMail(os.Getenv("MAILER"), os.Getenv("DEFAULT_EMAIL_FROM"), subject, result, []string{email})
+	err = SendMail(os.Getenv("DEFAULT_EMAIL_FROM"), subject, result, []string{email})
 	if err != nil {
 		return false, err
 	}
@@ -134,45 +136,35 @@ func (emailService *EmailService) SendNotificationEmail(email string, subject st
 }
 
 // SendMail function
-func SendMail(addr, from, subject, body string, to []string) error {
-	r := strings.NewReplacer("\r\n", "", "\r", "", "\n", "", "%0a", "", "%0d", "")
+func SendMail(from, subject, body string, to []string) error {
+	server := mail.NewSMTPClient()
+	// SMTP Server
+	server.Host = os.Getenv("MAILER_HOST")
+	server.Port, _ = strconv.Atoi(os.Getenv("MAILER_PORT"))
+	server.Username = os.Getenv("MAILER_USERNAME")
+	server.Password = os.Getenv("MAILER_PASSWORD")
 
-	c, err := smtp.Dial(addr)
-	if err != nil {
-		return err
-	}
-	defer c.Close()
-	if err = c.Mail(r.Replace(from)); err != nil {
-		return err
-	}
-	for i := range to {
-		to[i] = r.Replace(to[i])
-		if err = c.Rcpt(to[i]); err != nil {
-			return err
-		}
+	if os.Getenv("MAILER_HOST") != "localhost" {
+		server.Encryption = mail.EncryptionSSLTLS
+		server.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
-	w, err := c.Data()
+	// SMTP client
+	smtpClient, err := server.Connect()
+
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 
-	msg := "To: " + strings.Join(to, ",") + "\r\n" +
-		"From: " + from + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"Content-Type: text/html; charset=\"UTF-8\"\r\n" +
-		"Content-Transfer-Encoding: base64\r\n" +
-		"\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
+	email := mail.NewMSG()
+	email.SetFrom(from).
+		AddTo(strings.Join(to, ",")).
+		SetSubject(subject)
+	email.SetBody(mail.TextHTML, body)
 
-	_, err = w.Write([]byte(msg))
-	if err != nil {
-		return err
-	}
-	err = w.Close()
-	if err != nil {
-		return err
-	}
-	return c.Quit()
+	err = email.Send(smtpClient)
+	return err
 }
 
 func (emailService *EmailService) StoreEmails() (err error) {

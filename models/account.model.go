@@ -19,7 +19,6 @@ type Account struct {
 	CompanyPhone                    string    `json:"companyPhone" bson:"companyPhone"`
 	CompanyEmail                    string    `json:"companyEmail" bson:"companyEmail"`
 	StripeCustomerID                string    `json:"stripeCustomerId" bson:"stripeCustomerId"`
-	Active                          bool      `json:"active" bson:"active"`
 	PaymentFailed                   bool      `json:"paymentFailed" bson:"paymentFailed"`
 	PaymentFailedFirstAt            time.Time `json:"paymentFailedFirstAt" bson:"paymentFailedFirstAt"`
 	PaymentFailedSubscriptionEndsAt time.Time `json:"paymentFailedSubscriptionEndsAt" bson:"paymentFailedSubscriptionEndsAt"`
@@ -28,6 +27,7 @@ type Account struct {
 	TrialPeriodEndsAt               time.Time `json:"trialPeriodEndsAt" bson:"trialPeriodEndsAt"`
 	StripePlanID                    string    `json:"stripePlanId" bson:"stripePlanId"`
 	SubscriptionExpiresAt           time.Time `json:"subcriptionExpiresAt" bson:"subcriptionExpiresAt"`
+	PlanType                        string    `json:"planType" bson:"planType"`
 }
 
 // AccountSerializer function
@@ -38,6 +38,32 @@ type AccountSerializer struct {
 // ShowAccountSerializer function
 func ShowAccountSerializer() *AccountSerializer {
 	a := &AccountSerializer{structomap.New()}
-	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "Active", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "CreatedAt", "UpdatedAt")
+	a.UseCamelCase().Pick("ID", "Subdomain", "CompanyName", "CompanyVat", "CompanyBillingAddress", "CompanySdi", "CompanyPec", "CompanyPhone", "CompanyEmail", "PaymentFailed", "PaymentFailedFirstAt", "TrialPeriodEndsAt", "PaymentFailedSubscriptionEndsAt", "PrivacyAccepted", "MarketingAccepted", "StripePlanID", "SubscriptionExpiresAt", "PlanType", "CreatedAt", "UpdatedAt").AddFunc("SubscriptionStatus", func(a interface{}) interface{} {
+		account := a.(*Account)
+		return account.SubscriptionStatus()
+	})
 	return a
+}
+
+const (
+	SubscriptionTrial         = "trial"
+	SubscriptionPaymentFailed = "payment_failed"
+	SubscriptionDeactivated   = "deactivated"
+	SubscriptionActive        = "active"
+)
+
+func (account *Account) SubscriptionStatus() string {
+	if account.TrialPeriodEndsAt.After(time.Now()) {
+		return SubscriptionTrial
+	} else if account.TrialPeriodEndsAt != *new(time.Time) && account.TrialPeriodEndsAt.Before(time.Now()) {
+		return SubscriptionDeactivated
+	} else if account.PaymentFailed && account.PaymentFailedSubscriptionEndsAt != *new(time.Time) && account.PaymentFailedSubscriptionEndsAt.After(time.Now()) {
+		return SubscriptionPaymentFailed
+	} else if account.PaymentFailed && account.PaymentFailedSubscriptionEndsAt != *new(time.Time) && account.PaymentFailedSubscriptionEndsAt.Before(time.Now()) {
+		return SubscriptionDeactivated
+	} else if account.SubscriptionExpiresAt != *new(time.Time) && account.SubscriptionExpiresAt.Before(time.Now()) {
+		return SubscriptionDeactivated
+	} else {
+		return SubscriptionActive
+	}
 }
