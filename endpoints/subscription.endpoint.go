@@ -35,7 +35,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) Subscribe(ctx *fiber.Ctx) erro
 			"message": err.Error(),
 		})
 	}
-	return ctx.JSON(subscription)
+	marshalled, _ := json.Marshal(subscription)
+	var payload interface{}
+	json.Unmarshal(marshalled, &payload)
+	return ctx.JSON(payload)
 }
 
 // GetCustomer function
@@ -52,7 +55,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomer(ctx *fiber.Ctx) er
 			"message": err.Error(),
 		})
 	}
-	return ctx.JSON(sCustomer)
+	marshalled, _ := json.Marshal(sCustomer)
+	var payload interface{}
+	json.Unmarshal(marshalled, &payload)
+	return ctx.Status(200).JSON(payload)
 }
 
 // GetCustomerInvoices function
@@ -70,7 +76,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerInvoices(ctx *fiber
 	if len(sCustomerInvoices) == 0 {
 		return ctx.JSON([]string{})
 	}
-	return ctx.JSON(sCustomerInvoices)
+	marshalled, _ := json.Marshal(sCustomerInvoices)
+	var payload interface{}
+	json.Unmarshal(marshalled, &payload)
+	return ctx.Status(200).JSON(payload)
 }
 
 // GetCustomerCards function
@@ -88,7 +97,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) GetCustomerCards(ctx *fiber.Ct
 	if len(sCustomerCards) == 0 {
 		return ctx.JSON([]string{})
 	}
-	return ctx.JSON(sCustomerCards)
+	marshalled, _ := json.Marshal(sCustomerCards)
+	var payload interface{}
+	json.Unmarshal(marshalled, &payload)
+	return ctx.Status(200).JSON(payload)
 }
 
 // CancelSubscription function
@@ -115,7 +127,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) CancelSubscription(ctx *fiber.
 			"message": err.Error(),
 		})
 	}
-	return ctx.JSON(sCustomer)
+	marshalled, _ := json.Marshal(sCustomer)
+	var payload interface{}
+	json.Unmarshal(marshalled, &payload)
+	return ctx.Status(200).JSON(payload)
 }
 
 // AddCreditCard function
@@ -133,7 +148,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) CreateSetupIntent(ctx *fiber.C
 			"message": err.Error(),
 		})
 	}
-	return ctx.JSON(setupIntent)
+	marshalled, _ := json.Marshal(setupIntent)
+	var payload interface{}
+	json.Unmarshal(marshalled, &payload)
+	return ctx.Status(200).JSON(payload)
 }
 
 // RemoveCreditCard function
@@ -158,7 +176,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) RemoveCreditCard(ctx *fiber.Ct
 			"message": err.Error(),
 		})
 	}
-	return ctx.JSON(sCustomer)
+	marshalled, _ := json.Marshal(sCustomer)
+	var payload interface{}
+	json.Unmarshal(marshalled, &payload)
+	return ctx.Status(200).JSON(payload)
 }
 
 // SetDefaultCreditCard function
@@ -183,7 +204,10 @@ func (subscriptionEndpoint *SubscriptionEndpoint) SetDefaultCreditCard(ctx *fibe
 			"message": err.Error(),
 		})
 	}
-	return ctx.JSON(sCustomer)
+	marshalled, _ := json.Marshal(sCustomer)
+	var payload interface{}
+	json.Unmarshal(marshalled, &payload)
+	return ctx.Status(200).JSON(payload)
 }
 
 // Plans function
@@ -197,5 +221,5 @@ func (subscriptionEndpoint *SubscriptionEndpoint) Plans(ctx *fiber.Ctx) error {
 			"message": err.Error(),
 		})
 	}
-	return ctx.JSON(m)
+	return ctx.Status(200).JSON(m)
 }
