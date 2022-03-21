@@ -1,0 +1,57 @@
+version: "3"
+services:
+  startersaas-go-api:
+    container_name: startersaas-go-api
+    build: 
+      context: .
+      dockerfile: docker/dev/Dockerfile
+    volumes:
+      - ./:/go/src/app/
+      - ./go.mod:/go/src/app/go.mod
+    ports:
+      - "3000:3000"
+    networks:
+      - startersaas-go-api-network
+    depends_on:
+      - startersaas-redis
+      - startersaas-mongo
+
+  startersaas-redis:
+    image: "redis:alpine"
+    ports:
+      - "${REDIS_PORT}:6379"
+    env_file:
+      - .env
+    volumes:
+      - redis:/data
+    networks:
+      - startersaas-go-api-network 
+
+  startersaas-mongo:  
+    image: mongo:4.4
+    volumes:
+      - mongo:/data/db
+    ports:
+      - "${MONGO_PORT}:27017"
+    env_file:
+      - .env
+    networks:
+      - startersaas-go-api-network
+    
+  startersaas-mailhog:
+    image: mailhog/mailhog
+    logging:
+      driver: 'none'  # disable saving logs
+    ports:
+      - 1025:1025 # smtp server
+      - 8025:8025 # web ui
+    networks:
+      - startersaas-go-api-network
+
+volumes:
+  redis:
+  mongo:
+
+networks:
+  startersaas-go-api-network:
+    internal: true

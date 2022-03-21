@@ -146,8 +146,8 @@ func SendMail(from, subject, body string, to []string) error {
 
 	if os.Getenv("MAILER_HOST") != "localhost" {
 		server.Encryption = mail.EncryptionSSLTLS
-		server.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
+	server.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	// SMTP client
 	smtpClient, err := server.Connect()

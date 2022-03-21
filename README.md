@@ -2,22 +2,18 @@
 
 This project contains everything you need to setup a fully featured SaaS API in 5 minutes.
 # Installation
-Make sure you have MongoDB (4+) installed and running.
-
-Then make sure you have Go installed ([download](https://golang.org/dl/)). Version `1.14` or higher is required.
-
-Install all dependencies by running 
-
-```bash
-go get
-```
-
 Copy `.env.example` into `.env` and `stripe.conf.json.example` into `stripe.conf.json`.
 
-Finally, run the APIs by typing:
+Build the application
 
 ```bash
-go run main.go
+docker compose build
+```
+
+And finally, run the application
+
+```bash
+docker compose up
 ```
 
 
