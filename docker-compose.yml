@@ -9,9 +9,11 @@ services:
       - ./:/go/src/app/
       - ./go.mod:/go/src/app/go.mod
     ports:
-      - "3000:3000"
+      - "${APP_PORT}:3000"
+    env_file:
+      - .env
     networks:
-      - startersaas-go-api-network
+      - startersaas-network
     depends_on:
       - startersaas-redis
       - startersaas-mongo
@@ -25,7 +27,7 @@ services:
     volumes:
       - redis:/data
     networks:
-      - startersaas-go-api-network 
+      - startersaas-network 
 
   startersaas-mongo:  
     image: mongo:4.4
@@ -36,22 +38,23 @@ services:
     env_file:
       - .env
     networks:
-      - startersaas-go-api-network
+      - startersaas-network
     
   startersaas-mailhog:
     image: mailhog/mailhog
     logging:
       driver: 'none'  # disable saving logs
     ports:
-      - 1025:1025 # smtp server
-      - 8025:8025 # web ui
+      - "${MAILHOG_UI_PORT}:8025" # web ui
+    env_file:
+      - .env
     networks:
-      - startersaas-go-api-network
+      - startersaas-network
 
 volumes:
   redis:
   mongo:
 
 networks:
-  startersaas-go-api-network:
-    internal: true
+  startersaas-network:
+    external: true

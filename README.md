@@ -4,11 +4,18 @@ This project contains everything you need to setup a fully featured SaaS API in 
 # Installation
 Copy `.env.example` into `.env` and `stripe.conf.json.example` into `stripe.conf.json`.
 
-Build the application
+Create a startersaas newtwork typing:
+
+```bash
+docker network create startersaas-network
+```
+
+Then build the containers
 
 ```bash
 docker compose build
 ```
+
 
 And finally, run the application
 
