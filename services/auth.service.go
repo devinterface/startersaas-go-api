@@ -91,6 +91,7 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 
 	// create user
 	user.Role = models.AdminRole
+	user.AccountOwner = true
 	user.Active = signupWithActivate
 	if params["language"] != nil {
 		user.Language = params["language"].(string)

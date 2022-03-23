@@ -267,7 +267,7 @@ func (subscriptionService *SubscriptionService) RunNotifyExpiringTrials() (err e
 	params := bson.M{"trialPeriodEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, 3), operator.Gt: time.Now()}}
 	accounts, err := accountService.FindBy(params)
 	for _, account := range accounts {
-		user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+		user, _ := userService.OneBy(bson.M{"accountId": account.ID, "accountOwner": true})
 		daysToExpire := int(math.Round(time.Until(account.TrialPeriodEndsAt).Hours() / 24))
 		go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "subscriptionService.runNotifyExpiringTrials.subject", map[string]interface{}{"DaysToExpire": daysToExpire}), i18n.Tr(user.Language, "subscriptionService.runNotifyExpiringTrials.message", map[string]interface{}{"DaysToExpire": daysToExpire}), user.Language)
 	}
@@ -279,7 +279,7 @@ func (subscriptionService *SubscriptionService) RunNotifyPaymentFailed() (err er
 	params := bson.M{"paymentFailed": true, "paymentFailedSubscriptionEndsAt": bson.M{operator.Lt: time.Now().AddDate(0, 0, 3), operator.Gt: time.Now()}}
 	accounts, err := accountService.FindBy(params)
 	for _, account := range accounts {
-		user, _ := userService.OneBy(bson.M{"accountId": account.ID})
+		user, _ := userService.OneBy(bson.M{"accountId": account.ID, "accountOwner": true})
 		formattedPaymentFailedSubscriptionEndsAt := strftime.Format("%d/%m/%Y", account.PaymentFailedSubscriptionEndsAt)
 		daysToExpire := int(math.Round(time.Until(account.PaymentFailedSubscriptionEndsAt).Hours() / 24))
 		go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "subscriptionService.runNotifyPaymentFailed.subject", map[string]interface{}{"DaysToExpire": daysToExpire}), i18n.Tr(user.Language, "subscriptionService.runNotifyPaymentFailed.message", map[string]interface{}{"Date": formattedPaymentFailedSubscriptionEndsAt}), user.Language)
