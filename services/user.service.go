@@ -27,9 +27,17 @@ func (userService *UserService) OneBy(q bson.M) (user *models.User, err error) {
 }
 
 // Update function
-func (userService *UserService) Update(id interface{}, params interface{}) (updatedUser *models.User, err error) {
+func (userService *UserService) Update(id interface{}, accountID interface{}, params interface{}) (updatedUser *models.User, err error) {
 	user := &models.User{}
-	err = userService.getCollection().FindByID(id, user)
+	primitiveID, err := user.PrepareID(id)
+	if err != nil {
+		return user, err
+	}
+	primitiveAccountID, err := user.PrepareID(accountID)
+	if err != nil {
+		return user, err
+	}
+	err = userService.getCollection().First(bson.M{"_id": primitiveID, "accountId": primitiveAccountID}, user)
 	if err != nil {
 		return user, err
 	}
@@ -52,20 +60,18 @@ func (userService *UserService) Create(params interface{}, accountID primitive.O
 	if existentUser.ID != primitive.NilObjectID {
 		return existentUser, errors.New("email is invalid or already taken")
 	}
+	// if user.Password != "" {
+	// 	hash, _ := hashPassword(user.Password)
+	// 	user.Password = hash
+	// } else {
+	// 	defer emailService.SendForgotPasswordEmail(bson.M{"email": user.Email})
+	// }
 
-	if user.Password != "" {
-		hash, _ := hashPassword(user.Password)
-		user.Password = hash
-	} else {
-		defer emailService.SendForgotPasswordEmail(bson.M{"email": user.Email})
-	}
-
-	if !user.Active {
-		defer emailService.SendActivationEmail(bson.M{"email": user.Email})
-	}
+	defer emailService.SendActiveEmail(bson.M{"email": user.Email})
 	ssoUUID, _ := uuid.NewRandom()
 	user.Sso = ssoUUID.String()
 	user.AccountID = accountID
+	user.Active = true
 	err = userService.getCollection().Create(user)
 	return user, err
 }
@@ -91,9 +97,17 @@ func (userService *UserService) FindBy(q bson.M) (users []models.User, err error
 }
 
 // Delete function
-func (userService *UserService) Delete(id interface{}) (success bool, err error) {
+func (userService *UserService) Delete(id interface{}, accountID interface{}) (success bool, err error) {
 	user := &models.User{}
-	err = userService.getCollection().FindByID(id, user)
+	primitiveID, err := user.PrepareID(id)
+	if err != nil {
+		return false, err
+	}
+	primitiveAccountID, err := user.PrepareID(accountID)
+	if err != nil {
+		return false, err
+	}
+	err = userService.getCollection().First(bson.M{"_id": primitiveID, "accountId": primitiveAccountID}, user)
 	if err != nil {
 		return false, err
 	}

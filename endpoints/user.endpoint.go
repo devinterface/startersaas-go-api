@@ -51,8 +51,7 @@ func (userEndpoint *UserEndpoint) UpdateMe(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
 	}
-
-	updatedUser, _ := userService.Update(me.GetID(), inputMap)
+	updatedUser, _ := userService.Update(me.GetID(), me.AccountID, inputMap)
 	showUser := models.ShowUserSerializer().Transform(updatedUser)
 	return ctx.JSON(showUser)
 }
@@ -78,7 +77,8 @@ func (userEndpoint *UserEndpoint) GenerateSso(ctx *fiber.Ctx) error {
 	me, _ := userEndpoint.CurrentUser(ctx)
 	ssoUUID, _ := uuid.NewRandom()
 	inputMap := map[string]string{"sso": ssoUUID.String()}
-	updatedUser, err := userService.Update(me.GetID(), inputMap)
+
+	updatedUser, err := userService.Update(me.GetID(), me.AccountID, inputMap)
 	if err != nil {
 		return ctx.Status(404).JSON(fiber.Map{
 			"message": err.Error(),
@@ -91,6 +91,7 @@ func (userEndpoint *UserEndpoint) GenerateSso(ctx *fiber.Ctx) error {
 
 // Index function
 func (userEndpoint *UserEndpoint) Index(ctx *fiber.Ctx) error {
+	me, _ := userEndpoint.CurrentUser(ctx)
 	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
@@ -98,6 +99,7 @@ func (userEndpoint *UserEndpoint) Index(ctx *fiber.Ctx) error {
 	}
 	params := bson.M{}
 	ctx.BodyParser(&params)
+	params["accountId"] = me.AccountID
 	users, err := userService.FindBy(params)
 	if err != nil {
 		return ctx.Status(401).JSON(fiber.Map{
@@ -123,11 +125,10 @@ func (userEndpoint *UserEndpoint) Create(ctx *fiber.Ctx) error {
 	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
 		"name":     "alpha",
 		"surname":  "alpha",
-		"language": "alpha",
+		"language": "alpha, in(it|en)",
 		"email":    "email, required",
 		"password": "alpha",
-		"active":   "-",
-		"role":     "alpha",
+		"role":     "alpha, in(user|admin)",
 	})
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
@@ -144,6 +145,7 @@ func (userEndpoint *UserEndpoint) Create(ctx *fiber.Ctx) error {
 
 // Update function
 func (userEndpoint *UserEndpoint) Update(ctx *fiber.Ctx) error {
+	me, _ := userEndpoint.CurrentUser(ctx)
 	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": "You are not authorized to perform this action",
@@ -156,14 +158,13 @@ func (userEndpoint *UserEndpoint) Update(ctx *fiber.Ctx) error {
 	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
 		"name":     "alpha",
 		"surname":  "alpha",
-		"language": "alpha",
-		"active":   "-",
-		"role":     "alpha",
+		"language": "alpha, in(it|en)",
+		"role":     "alpha, in(user|admin)",
 	})
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
 	}
-	updatedUser, err := userService.Update(ctx.Params("id"), inputMap)
+	updatedUser, err := userService.Update(ctx.Params("id"), me.AccountID, inputMap)
 	if err != nil {
 		return ctx.Status(404).JSON(fiber.Map{
 			"message": err.Error(),
@@ -183,7 +184,7 @@ func (userEndpoint *UserEndpoint) Delete(ctx *fiber.Ctx) error {
 			"message": "You are not authorized to perform this action",
 		})
 	}
-	deleted, err := userService.Delete(ctx.Params("id"))
+	deleted, err := userService.Delete(ctx.Params("id"), me.AccountID)
 	if err != nil {
 		return ctx.Status(401).JSON(fiber.Map{
 			"message": err.Error(),
