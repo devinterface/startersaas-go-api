@@ -91,6 +91,7 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 
 	// create user
 	user.Role = models.AdminRole
+	user.AccountOwner = true
 	user.Active = signupWithActivate
 	if params["language"] != nil {
 		user.Language = params["language"].(string)
@@ -173,10 +174,11 @@ func (authService *AuthService) Sso(sso string) (response map[string]string, err
 }
 
 func generateToken(user models.User) (tokenString string) {
+	expire, _ := strconv.Atoi(os.Getenv("JWT_EXPIRE"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": user.Email,
 		"role":  user.Role,
-		"exp":   time.Now().Add(time.Hour * 72).Unix(),
+		"exp":   time.Now().AddDate(0, 0, expire).Unix(),
 	})
 
 	key := os.Getenv("JWT_SECRET")

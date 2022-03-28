@@ -80,7 +80,7 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 	account.PaymentFailedSubscriptionEndsAt = subscriptionDeactivatedAt
 	_ = accountService.getCollection().Update(account)
 	formattedSubscriptionDeactivatedAt := strftime.Format("%d/%m/%Y", subscriptionDeactivatedAt)
-	user, err := userService.OneBy(bson.M{"accountId": account.ID})
+	user, err := userService.OneBy(bson.M{"accountId": account.ID, "accountOwner": true})
 	if err != nil {
 		return false, err
 	}
@@ -101,7 +101,7 @@ func (webhookService *WebhookService) NewSubscription(event stripe.Event) (succe
 	if err != nil {
 		return false, err
 	}
-	user, err := userService.OneBy(bson.M{"accountId": account.ID})
+	user, err := userService.OneBy(bson.M{"accountId": account.ID, "accountOwner": true})
 	if err != nil {
 		return false, err
 	}
@@ -142,7 +142,7 @@ func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (s
 	account.PlanType = plan["planType"].(string)
 
 	_ = accountService.getCollection().Update(account)
-	user, err := userService.OneBy(bson.M{"accountId": account.ID})
+	user, err := userService.OneBy(bson.M{"accountId": account.ID, "accountOwner": true})
 	if err != nil {
 		return false, err
 	}

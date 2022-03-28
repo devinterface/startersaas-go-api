@@ -1,23 +1,32 @@
-# Starter SaaS GO API
+# Starter SaaS Go API
 
 This project contains everything you need to setup a fully featured SaaS API in 5 minutes.
 # Installation
-Make sure you have MongoDB (4+) installed and running.
-
-Then make sure you have Go installed ([download](https://golang.org/dl/)). Version `1.14` or higher is required.
-
-Install all dependencies by running 
-
-```bash
-go get
-```
-
 Copy `.env.example` into `.env` and `stripe.conf.json.example` into `stripe.conf.json`.
 
-Finally, run the APIs by typing:
+Create a startersaas newtwork typing:
 
 ```bash
-go run main.go
+docker network create startersaas-network
+```
+
+Then build the containers
+
+```bash
+docker compose build
+```
+
+
+And finally, run the application
+
+```bash
+docker compose up
+```
+
+Application will be reachable on 
+
+```bash
+http://localhost:3000
 ```
 
 
@@ -38,7 +47,13 @@ customer.subscription.created
 customer.subscription.updated
 ```
 
-Configure Stripe to retry failed payments for X days (https://dashboard.stripe.com/settings/billing/automatic Smart Retries section), and then cancel the subscription. 
+For local development, use the stripe-cli to build a local tunnel:
+
+```bash
+stripe listen --load-from-webhooks-api --forward-to localhost:3000
+```
+
+Finally, configure Stripe to retry failed payments for X days (https://dashboard.stripe.com/settings/billing/automatic Smart Retries section), and then cancel the subscription. 
 
 Remember this value, it will be used in the `.env` file in `PAYMENT_FAILED_RETRY_DAYS` variable.
 
@@ -57,7 +72,7 @@ Below the meaning of every environment variable you can setup.
 
 `JWT_SECRET="aaabbbccc"` set this value secret, very long and random
 
-`JWT_EXPIRE="1d"` # how long the JWT token last
+`JWT_EXPIRE="20"` # how many days the JWT token last
 
 `FRONTEND_LOGIN_URL="http://localhost:5000/auth/login"` raplace http://localhost:5000 with the real production host of the React frontend
 
@@ -85,8 +100,9 @@ Below the meaning of every environment variable you can setup.
 
 `NOTIFIED_ADMIN_EMAIL="info@startersaas.com"` we notify this email when some events occur, like a new subscription, a failed payment and so on
 
-`SIGNUP_WITH_ACTIVATE=true` set this value as true if you want to log the new registered user direclty, without asking for email confirmation
+`SIGNUP_WITH_ACTIVATE=true` set this value as true if you want to log the new registered user directly, without asking for email confirmation
 
+`STARTER_PLAN_TYPE="starter"` set the plan to assign by default to a new customer 
 
 # Configuring stripe.conf.json
 
@@ -96,29 +112,28 @@ Then for every product you want to sell, copy it's price_id (usually starts with
 
 ```
 {
-  "id": "price_xyz",
-  "title": "Starter - Piano Mensile",
-  "price": 199,
+  "id": "price_XYZ",
+  "title": "Starter",
+  "price": 4.90,
   "currency": "EUR",
   "features": [
-    "Piano editoriale mensile",
-    "1 post Facebook/settimana",
-    "1 post Instagram/settimana",
-    "1 Facebook story/settimana",
-    "1 Instagram story/settimana",
-    "1 articolo il blog ottimizzato SEO",
-    "-",
-    "-",
-    "-",
-    "-"
+    "1 project",
+    "0 tags",
+    "star entries",
+    "1 user",
+    "3 days data retention",
+    "no push notifications"
   ],
-  "monthly": true
+  "monthly": true,
+  "planType": "starter"
 }
 ```
 
 Then sets its title, its price (in cents, the same you have configured in Stripe) and the list of features you want to show in the frontend pricing table. 
 
-Finally set `"monthly":true` if your plan is billed on monthly basis, otherwise we consider it billed yearly.
+Set `"monthly":true` if your plan is billed on monthly basis, otherwise we consider it billed yearly.
+
+Set `"planType"` with your plan code to a more user friendly knowledge of the current plan.
 
 
 # Features
@@ -139,16 +154,17 @@ Finally set `"monthly":true` if your plan is billed on monthly basis, otherwise 
 * add new credit card
 * subscription cancel
 * 3D Secure ready payments
-
-### API only
-
 * account's users list (by admins only)
 * account's user create (by admins only)
 * account's user update (by admins only)
+* account's user delete (by admins only)
+
+### API only
+
 * stripe webhooks handling
 * events notifications by email:
   - new user subscribed
-  - succesful payments
+  - successful payments
   - failed payments
 * daily notifications by email:
   - expiring trials

@@ -22,6 +22,7 @@ type User struct {
 	PasswordResetExpires time.Time          `json:"passwordResetExpires" bson:"passwordResetExpires"`
 	Sso                  string             `json:"sso" bson:"sso"`
 	Active               bool               `json:"active" bson:"active"`
+	AccountOwner         bool               `json:"accountOwner" bson:"accountOwner"`
 	AccountID            primitive.ObjectID `json:"accountId" bson:"accountId"`
 }
 
@@ -42,6 +43,6 @@ type UserSerializer struct {
 // ShowUserSerializer function
 func ShowUserSerializer() *UserSerializer {
 	u := &UserSerializer{structomap.New()}
-	u.UseCamelCase().Pick("ID", "Name", "Surname", "Email", "Language", "Role", "Active", "AccountID", "CreatedAt", "UpdatedAt")
+	u.UseCamelCase().Pick("ID", "Name", "Surname", "Email", "Language", "Role", "Active", "AccountID", "AccountOwner", "CreatedAt", "UpdatedAt")
 	return u
 }

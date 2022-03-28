@@ -41,6 +41,7 @@ func SetupPrivateRoutes(app *fiber.App) {
 	v1.Put("/users/me/change-password", middlewares.LoadUserAccount, userEndpoint.ChangePassword)
 	v1.Put("/users/me/generate-sso", middlewares.LoadUserAccount, userEndpoint.GenerateSso)
 	v1.Get("/users", middlewares.LoadUserAccount, userEndpoint.Index)
+	v1.Get("/users/:id", middlewares.LoadUserAccount, userEndpoint.ByID)
 	v1.Post("/users", middlewares.LoadUserAccount, userEndpoint.Create)
 	v1.Put("/users/:id", middlewares.LoadUserAccount, userEndpoint.Update)
 	v1.Delete("/users/:id", middlewares.LoadUserAccount, userEndpoint.Delete)

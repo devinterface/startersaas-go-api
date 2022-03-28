@@ -144,7 +144,7 @@ func SendMail(from, subject, body string, to []string) error {
 	server.Username = os.Getenv("MAILER_USERNAME")
 	server.Password = os.Getenv("MAILER_PASSWORD")
 
-	if os.Getenv("MAILER_HOST") != "localhost" {
+	if os.Getenv("MAILER_SSL") != "false" {
 		server.Encryption = mail.EncryptionSSLTLS
 		server.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 	}
