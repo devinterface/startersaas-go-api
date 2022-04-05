@@ -40,6 +40,7 @@ func (accountEndpoint *AccountEndpoint) Update(ctx *fiber.Ctx) error {
 		"companyPhone":          "ascii",
 		"companyEmail":          "ascii",
 		"companyPec":            "ascii",
+		"companyCountry":        "ascii",
 	})
 	if err != nil {
 		return ctx.Status(422).JSON(err.Error())
