@@ -11,7 +11,7 @@ import (
 	"github.com/Kamva/mgm/v3"
 	strftime "github.com/jehiah/go-strftime"
 	"github.com/kataras/i18n"
-	"github.com/stripe/stripe-go/v71"
+	"github.com/stripe/stripe-go/v72"
 	"github.com/thoas/go-funk"
 	"go.mongodb.org/mongo-driver/bson"
 )

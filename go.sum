@@ -4,8 +4,6 @@ github.com/BurntSushi/toml v0.4.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbi
 github.com/Kamva/mgm/v3 v3.0.1 h1:jgWuqhdzUGLpGmbNfHtONY/6ikBs2g0aKlKqvEK/HzI=
 github.com/Kamva/mgm/v3 v3.0.1/go.mod h1:3F9EhA1QeVB6kk8oWZSHVAye/+af8EQBTuZ0gAR/U88=
 github.com/andybalholm/brotli v1.0.2/go.mod h1:loMXtMfwqflxFJPmdbJO0a3KNoPuLBgiu3qAvBg8x/Y=
-github.com/andybalholm/brotli v1.0.3 h1:fpcw+r1N1h0Poc1F/pHbW40cUm/lMEQslZtCkBQ0UnM=
-github.com/andybalholm/brotli v1.0.3/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d h1:Byv0BzEl3/e6D5CLfI0j/7hiIEtvGVFPCZ7Ei2oq8iQ=
@@ -135,10 +133,8 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/stripe/stripe-go/v71 v71.48.0 h1:xSmbjHB1fdt6ieIf9yCGggafbzbXHPIhQj+R1gxTUHM=
-github.com/stripe/stripe-go/v71 v71.48.0/go.mod h1:BXYwMQe+xjYomcy5/qaTGyoyVMTP3wDCHa7DVFvg8+Y=
-github.com/stripe/stripe-go/v72 v72.91.0 h1:aZBz1IeXs2G3MAVmE4bYSBcVYcHrLWGyTz2CWIdbejs=
-github.com/stripe/stripe-go/v72 v72.91.0/go.mod h1:QwqJQtduHubZht9mek5sds9CtQcKFdsykV9ZepRWwo0=
+github.com/stripe/stripe-go/v72 v72.100.0 h1:FsU3JvEFnvsQdpzJftGuqFwoWWZ7t73R0vYWKFsIH3I=
+github.com/stripe/stripe-go/v72 v72.100.0/go.mod h1:QwqJQtduHubZht9mek5sds9CtQcKFdsykV9ZepRWwo0=
 github.com/thoas/go-funk v0.9.1 h1:O549iLZqPpTUQ10ykd26sZhzD+rmR5pWhuElrhbC20M=
 github.com/thoas/go-funk v0.9.1/go.mod h1:+IWnUfUmFO1+WVYQWQtIJHeRRdaIyyYglZN7xzUPe4Q=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=

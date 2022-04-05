@@ -10,13 +10,13 @@ import (
 	"github.com/Kamva/mgm/v3/operator"
 	strftime "github.com/jehiah/go-strftime"
 	"github.com/kataras/i18n"
-	"github.com/stripe/stripe-go/v71"
-	"github.com/stripe/stripe-go/v71/customer"
-	"github.com/stripe/stripe-go/v71/invoice"
-	"github.com/stripe/stripe-go/v71/paymentmethod"
-	"github.com/stripe/stripe-go/v71/plan"
-	"github.com/stripe/stripe-go/v71/setupintent"
-	"github.com/stripe/stripe-go/v71/sub"
+	"github.com/stripe/stripe-go/v72"
+	"github.com/stripe/stripe-go/v72/customer"
+	"github.com/stripe/stripe-go/v72/invoice"
+	"github.com/stripe/stripe-go/v72/paymentmethod"
+	"github.com/stripe/stripe-go/v72/plan"
+	"github.com/stripe/stripe-go/v72/setupintent"
+	"github.com/stripe/stripe-go/v72/sub"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -40,6 +40,11 @@ func (subscriptionService *SubscriptionService) CreateCustomer(userID interface{
 	params := &stripe.CustomerParams{
 		Name:  stripe.String(account.CompanyName),
 		Email: stripe.String(user.Email),
+		Address: &stripe.AddressParams{
+			Line1:   stripe.String(account.CompanyBillingAddress),
+			City:    stripe.String(account.CompanyCountry),
+			Country: stripe.String(account.CompanyCountry),
+		},
 	}
 	params.AddMetadata("companyName", account.CompanyName)
 	params.AddMetadata("address", account.CompanyBillingAddress)
@@ -79,7 +84,9 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 		}
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
-	sCustomer, _ := customer.Get(account.StripeCustomerID, &stripe.CustomerParams{})
+	customerParams := &stripe.CustomerParams{}
+	customerParams.AddExpand("subscriptions")
+	sCustomer, _ := customer.Get(account.StripeCustomerID, customerParams)
 
 	sPlan, _ := plan.Get(planID, &stripe.PlanParams{})
 	var activeSubscription *stripe.Subscription
@@ -90,7 +97,13 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 	}
 
 	if activeSubscription != nil {
-		params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(false), Plan: stripe.String(sPlan.ID), ProrationBehavior: stripe.String("always_invoice"), PaymentBehavior: stripe.String("default_incomplete")}
+		params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(false),
+			Plan:              stripe.String(sPlan.ID),
+			ProrationBehavior: stripe.String("always_invoice"),
+			PaymentBehavior:   stripe.String("default_incomplete"),
+			AutomaticTax: &stripe.SubscriptionAutomaticTaxParams{
+				Enabled: stripe.Bool(true),
+			}}
 		params.AddExpand("latest_invoice.payment_intent")
 		subscription, err = sub.Update(activeSubscription.ID, params)
 		if err != nil {
@@ -104,7 +117,12 @@ func (subscriptionService *SubscriptionService) Subscribe(userID interface{}, pl
 			}
 		}
 
-		params := &stripe.SubscriptionParams{Customer: stripe.String(sCustomer.ID), Plan: stripe.String(sPlan.ID), PaymentBehavior: stripe.String("default_incomplete")}
+		params := &stripe.SubscriptionParams{Customer: stripe.String(sCustomer.ID),
+			Plan:            stripe.String(sPlan.ID),
+			PaymentBehavior: stripe.String("default_incomplete"),
+			AutomaticTax: &stripe.SubscriptionAutomaticTaxParams{
+				Enabled: stripe.Bool(true),
+			}}
 		params.AddExpand("latest_invoice.payment_intent")
 		subscription, err = sub.New(params)
 		if err != nil {
@@ -127,7 +145,9 @@ func (subscriptionService *SubscriptionService) GetCustomer(accountID interface{
 		return nil, errors.New("user is not a stripe USER")
 	}
 	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
-	sCustomer, err = customer.Get(account.StripeCustomerID, &stripe.CustomerParams{})
+	customerParams := &stripe.CustomerParams{}
+	customerParams.AddExpand("subscriptions")
+	sCustomer, err = customer.Get(account.StripeCustomerID, customerParams)
 
 	return sCustomer, err
 }
@@ -191,7 +211,9 @@ func (subscriptionService *SubscriptionService) CancelSubscription(accountID int
 	params := &stripe.SubscriptionParams{CancelAtPeriodEnd: stripe.Bool(true)}
 	sub.Update(subscriptionId, params)
 
-	sCustomer, err = customer.Get(account.StripeCustomerID, &stripe.CustomerParams{})
+	customerParams := &stripe.CustomerParams{}
+	customerParams.AddExpand("subscriptions")
+	sCustomer, err = customer.Get(account.StripeCustomerID, customerParams)
 
 	return sCustomer, err
 }
@@ -239,7 +261,9 @@ func (subscriptionService *SubscriptionService) RemoveCreditCard(accountID inter
 	if err != nil {
 		return nil, err
 	}
-	sCustomer, err = customer.Get(account.StripeCustomerID, &stripe.CustomerParams{})
+	customerParams := &stripe.CustomerParams{}
+	customerParams.AddExpand("subscriptions")
+	sCustomer, err = customer.Get(account.StripeCustomerID, customerParams)
 
 	return sCustomer, err
 }

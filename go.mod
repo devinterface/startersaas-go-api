@@ -18,7 +18,7 @@ require (
 	github.com/kataras/i18n v0.0.6
 	github.com/mitchellh/mapstructure v1.4.2
 	github.com/osteele/liquid v1.2.4
-	github.com/stripe/stripe-go/v71 v71.48.0
+	github.com/stripe/stripe-go/v72 v72.100.0
 	github.com/thoas/go-funk v0.9.1
 	github.com/xhit/go-simple-mail/v2 v2.10.0
 	go.mongodb.org/mongo-driver v1.7.3
