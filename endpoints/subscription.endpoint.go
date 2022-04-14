@@ -223,3 +223,49 @@ func (subscriptionEndpoint *SubscriptionEndpoint) Plans(ctx *fiber.Ctx) error {
 	}
 	return ctx.Status(200).JSON(m)
 }
+
+// CreateCustomerCheckoutSession function
+func (subscriptionEndpoint *SubscriptionEndpoint) CreateCustomerCheckoutSession(ctx *fiber.Ctx) error {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
+		return ctx.Status(401).JSON(fiber.Map{
+			"message": "You are not authorized to perform this action",
+		})
+	}
+	var inputMap = make(map[string]interface{})
+	ctx.BodyParser(&inputMap)
+	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
+		"planId": "ascii,required",
+	})
+	if err != nil {
+		return ctx.Status(422).JSON(err.Error())
+	}
+	me, _ := userEndpoint.CurrentUser(ctx)
+	redirectUrl, err := subscriptionService.CreateCustomerCheckoutSession(me.ID, inputMap["planId"].(string))
+	if err != nil {
+		return ctx.Status(401).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	return ctx.Status(200).JSON(fiber.Map{
+		"redirect_url": redirectUrl,
+	})
+}
+
+// CreateCustomerPortalSession function
+func (subscriptionEndpoint *SubscriptionEndpoint) CreateCustomerPortalSession(ctx *fiber.Ctx) error {
+	if can := userEndpoint.Can(ctx, models.AdminRole); !can {
+		return ctx.Status(401).JSON(fiber.Map{
+			"message": "You are not authorized to perform this action",
+		})
+	}
+	me, _ := userEndpoint.CurrentUser(ctx)
+	redirectUrl, err := subscriptionService.CreateCustomerPortalSession(me.AccountID)
+	if err != nil {
+		return ctx.Status(401).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	return ctx.Status(200).JSON(fiber.Map{
+		"redirect_url": redirectUrl,
+	})
+}

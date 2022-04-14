@@ -11,6 +11,8 @@ import (
 	strftime "github.com/jehiah/go-strftime"
 	"github.com/kataras/i18n"
 	"github.com/stripe/stripe-go/v72"
+	"github.com/stripe/stripe-go/v72/billingportal/session"
+	checkout_session "github.com/stripe/stripe-go/v72/checkout/session"
 	"github.com/stripe/stripe-go/v72/customer"
 	"github.com/stripe/stripe-go/v72/invoice"
 	"github.com/stripe/stripe-go/v72/paymentmethod"
@@ -309,4 +311,63 @@ func (subscriptionService *SubscriptionService) RunNotifyPaymentFailed() (err er
 		go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "subscriptionService.runNotifyPaymentFailed.subject", map[string]interface{}{"DaysToExpire": daysToExpire}), i18n.Tr(user.Language, "subscriptionService.runNotifyPaymentFailed.message", map[string]interface{}{"Date": formattedPaymentFailedSubscriptionEndsAt}), user.Language)
 	}
 	return err
+}
+
+// CreateCustomerCheckoutSession function
+func (subscriptionService *SubscriptionService) CreateCustomerCheckoutSession(userID interface{}, planID string) (redirect_url string, err error) {
+	user := &models.User{}
+	err = userService.getCollection().FindByID(userID, user)
+	if err != nil {
+		return "", err
+	}
+	account := &models.Account{}
+	err = accountService.getCollection().FindByID(user.AccountID, account)
+	if err != nil {
+		return "", err
+	}
+	if account.StripeCustomerID == "" {
+		_, err = subscriptionService.CreateCustomer(userID)
+		if err != nil {
+			return "", err
+		}
+		err = accountService.getCollection().FindByID(user.AccountID, account)
+		if err != nil {
+			return "", err
+		}
+	}
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+	params := &stripe.CheckoutSessionParams{
+		SuccessURL:   stripe.String(os.Getenv("FRONTEND_CUSTOMER_PORTAL_REDIRECT_URL")),
+		CancelURL:    stripe.String(os.Getenv("FRONTEND_CUSTOMER_PORTAL_REDIRECT_URL")),
+		Mode:         stripe.String(string(stripe.CheckoutSessionModeSubscription)),
+		Customer:     stripe.String(account.StripeCustomerID),
+		AutomaticTax: &stripe.CheckoutSessionAutomaticTaxParams{Enabled: stripe.Bool(true)},
+		LineItems: []*stripe.CheckoutSessionLineItemParams{
+			&stripe.CheckoutSessionLineItemParams{
+				Price: stripe.String(planID),
+				// For metered billing, do not pass quantity
+				Quantity: stripe.Int64(1),
+			},
+		},
+	}
+
+	s, _ := checkout_session.New(params)
+	return s.URL, err
+}
+
+// CreateCustomerPortalSession function
+func (subscriptionService *SubscriptionService) CreateCustomerPortalSession(AccountID interface{}) (redirect_url string, err error) {
+	account := &models.Account{}
+	err = accountService.getCollection().FindByID(AccountID, account)
+	if err != nil {
+		return "", err
+	}
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	params := &stripe.BillingPortalSessionParams{
+		Customer:  stripe.String(account.StripeCustomerID),
+		ReturnURL: stripe.String(os.Getenv("FRONTEND_CUSTOMER_PORTAL_REDIRECT_URL")),
+	}
+	s, _ := session.New(params)
+	return s.URL, err
 }

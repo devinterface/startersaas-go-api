@@ -52,5 +52,7 @@ func SetupPrivateRoutes(app *fiber.App) {
 	v1.Get("/stripe/customers/me/cards", middlewares.LoadUserAccount, subscriptionEndpoint.GetCustomerCards)
 	v1.Delete("/stripe/cards", middlewares.LoadUserAccount, subscriptionEndpoint.RemoveCreditCard)
 	v1.Put("/stripe/cards", middlewares.LoadUserAccount, subscriptionEndpoint.SetDefaultCreditCard)
-	v1.Post("/stripe/createSetupIntent", middlewares.LoadUserAccount, subscriptionEndpoint.CreateSetupIntent)
+	v1.Post("/stripe/create-setup-intent", middlewares.LoadUserAccount, subscriptionEndpoint.CreateSetupIntent)
+	v1.Post("/stripe/create-customer-checkout-session", middlewares.LoadUserAccount, subscriptionEndpoint.CreateCustomerCheckoutSession)
+	v1.Post("/stripe/create-customer-portal-session", middlewares.LoadUserAccount, subscriptionEndpoint.CreateCustomerPortalSession)
 }
