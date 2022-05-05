@@ -2,8 +2,8 @@ package endpoints
 
 import (
 	"devinterface.com/startersaas-go-api/models"
-	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gookit/validate"
 )
 
 // AccountEndpoint struct
@@ -32,18 +32,17 @@ func (accountEndpoint *AccountEndpoint) Update(ctx *fiber.Ctx) error {
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
 
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"companyName":           "ascii",
-		"companyVat":            "ascii",
-		"companyBillingAddress": "ascii",
-		"companySdi":            "ascii",
-		"companyPhone":          "ascii",
-		"companyEmail":          "ascii",
-		"companyPec":            "ascii",
-		"companyCountry":        "ascii",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("companyName", "ascii")
+	v.StringRule("companyVat", "ascii")
+	v.StringRule("companyBillingAddress", "ascii")
+	v.StringRule("companySdi", "ascii")
+	v.StringRule("companyEmail", "email")
+	v.StringRule("companyPec", "email")
+	v.StringRule("companyCountry", "ascii")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	updatedAccount, err := accountService.Update(ctx.Params("id"), inputMap)
 	if err != nil {

@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/Kamva/mgm/v3 v3.0.1
-	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/devinterface/structomap v1.0.0
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
 	github.com/go-co-op/gocron v1.9.0
@@ -22,6 +21,7 @@ require (
 	github.com/thoas/go-funk v0.9.1
 	github.com/xhit/go-simple-mail/v2 v2.10.0
 	go.mongodb.org/mongo-driver v1.7.3
+	github.com/gookit/validate v1.3.1
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 	golang.org/x/text v0.3.7 // indirect

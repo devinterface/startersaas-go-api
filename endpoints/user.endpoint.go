@@ -2,9 +2,9 @@ package endpoints
 
 import (
 	"devinterface.com/startersaas-go-api/models"
-	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/gookit/validate"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -43,13 +43,11 @@ func (userEndpoint *UserEndpoint) UpdateMe(ctx *fiber.Ctx) error {
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
 
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"name":     "alpha",
-		"surname":  "alpha",
-		"language": "alpha",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("password", "ascii|required")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	updatedUser, _ := userService.Update(me.GetID(), me.AccountID, inputMap)
 	showUser := models.ShowUserSerializer().Transform(updatedUser)
@@ -61,11 +59,11 @@ func (userEndpoint *UserEndpoint) ChangePassword(ctx *fiber.Ctx) error {
 	me, _ := userEndpoint.CurrentUser(ctx)
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"password": "ascii,required",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("password", "ascii|required")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	updatedUser, _ := userService.UpdatePassword(me.GetID(), inputMap["password"].(string))
 	showUser := models.ShowUserSerializer().Transform(updatedUser)
@@ -140,16 +138,16 @@ func (userEndpoint *UserEndpoint) Create(ctx *fiber.Ctx) error {
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
 
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"name":     "alpha",
-		"surname":  "alpha",
-		"language": "alpha, in(it|en)",
-		"email":    "email, required",
-		"password": "alpha",
-		"role":     "alpha, in(user|admin)",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("name", "alpha")
+	v.StringRule("surname", "alpha")
+	v.StringRule("language", "in:it,en")
+	v.StringRule("email", "required")
+	v.StringRule("password", "alpha")
+	v.StringRule("role", "in:user,admin")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	user, err := userService.Create(inputMap, me.AccountID)
 	if err != nil {
@@ -173,14 +171,14 @@ func (userEndpoint *UserEndpoint) Update(ctx *fiber.Ctx) error {
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
 
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"name":     "alpha",
-		"surname":  "alpha",
-		"language": "alpha, in(it|en)",
-		"role":     "alpha, in(user|admin)",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("name", "alpha")
+	v.StringRule("surname", "alpha")
+	v.StringRule("language", "in:it,en")
+	v.StringRule("role", "in:user,admin")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	updatedUser, err := userService.Update(ctx.Params("id"), me.AccountID, inputMap)
 	if err != nil {

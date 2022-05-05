@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 
 	"devinterface.com/startersaas-go-api/models"
-	"github.com/asaskevich/govalidator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gookit/validate"
 )
 
 // SubscriptionEndpoint struct
@@ -20,12 +20,12 @@ func (subscriptionEndpoint *SubscriptionEndpoint) Subscribe(ctx *fiber.Ctx) erro
 		})
 	}
 	var inputMap = make(map[string]interface{})
-	ctx.BodyParser(&inputMap)
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"planId": "ascii,required",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("planId", "ascii|required")
+	v.StringRule("password", "required")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 
 	me, _ := userEndpoint.CurrentUser(ctx)
@@ -112,13 +112,11 @@ func (subscriptionEndpoint *SubscriptionEndpoint) CancelSubscription(ctx *fiber.
 	}
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"subscriptionId": "ascii,required",
-	})
-	if err != nil {
-		return ctx.Status(401).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+	v := validate.Map(inputMap)
+	v.StringRule("subscriptionId", "ascii|required")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	account, _ := userEndpoint.CurrentAccount(ctx)
 	sCustomer, err := subscriptionService.CancelSubscription(account.ID, inputMap["subscriptionId"].(string))
@@ -163,11 +161,11 @@ func (subscriptionEndpoint *SubscriptionEndpoint) RemoveCreditCard(ctx *fiber.Ct
 	}
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"cardId": "ascii,required",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("cardId", "ascii|required")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	account, _ := userEndpoint.CurrentAccount(ctx)
 	sCustomer, err := subscriptionService.RemoveCreditCard(account.ID, inputMap["cardId"].(string))
@@ -191,11 +189,11 @@ func (subscriptionEndpoint *SubscriptionEndpoint) SetDefaultCreditCard(ctx *fibe
 	}
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"cardId": "ascii,required",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("cardId", "ascii|required")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	account, _ := userEndpoint.CurrentAccount(ctx)
 	sCustomer, err := subscriptionService.SetDefaultCreditCard(account.ID, inputMap["cardId"].(string))
@@ -233,11 +231,11 @@ func (subscriptionEndpoint *SubscriptionEndpoint) CreateCustomerCheckoutSession(
 	}
 	var inputMap = make(map[string]interface{})
 	ctx.BodyParser(&inputMap)
-	_, err := govalidator.ValidateMap(inputMap, map[string]interface{}{
-		"planId": "ascii,required",
-	})
-	if err != nil {
-		return ctx.Status(422).JSON(err.Error())
+	v := validate.Map(inputMap)
+	v.StringRule("planId", "ascii|required")
+
+	if !v.Validate() {
+		return ctx.Status(422).JSON(v.Errors)
 	}
 	me, _ := userEndpoint.CurrentUser(ctx)
 	redirectUrl, err := subscriptionService.CreateCustomerCheckoutSession(me.ID, inputMap["planId"].(string))
