@@ -35,7 +35,7 @@ func checkPasswordHash(password, hash string) bool {
 func (authService *AuthService) Login(email string, cleanPassword string, refreshToken bool) (response map[string]string, err error) {
 	user := &models.User{}
 	coll := mgm.CollectionByName("user")
-	coll.First(bson.M{"email": email, "active": true}, user)
+	coll.First(bson.M{"email": strings.ToLower(email), "active": true}, user)
 
 	// check password if we are not refreshing JWT token
 	if !refreshToken {
