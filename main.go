@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	jwtware "github.com/gofiber/jwt/v3"
+	"github.com/gookit/validate"
 	_ "github.com/joho/godotenv/autoload"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -45,6 +46,17 @@ func main() {
 	}))
 	initDabatase()
 	storeEmails()
+
+	validate.Config(func(opt *validate.GlobalOption) {
+		opt.StopOnError = false
+	})
+
+	// app.Use(func(c *fiber.Ctx) error {
+	// 	if c.Is("json") {
+	// 		return c.Next()
+	// 	}
+	// 	return c.SendString("Only JSON allowed!")
+	// })
 
 	endpoints.SetupPublicRoutes(app)
 
