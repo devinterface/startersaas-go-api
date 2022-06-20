@@ -20,9 +20,11 @@ func (subscriptionEndpoint *SubscriptionEndpoint) Subscribe(ctx *fiber.Ctx) erro
 		})
 	}
 	var inputMap = make(map[string]interface{})
+	ctx.BodyParser(&inputMap)
+
 	v := validate.Map(inputMap)
+
 	v.StringRule("planId", "ascii|required")
-	v.StringRule("password", "required")
 
 	if !v.Validate() {
 		return ctx.Status(422).JSON(v.Errors)
