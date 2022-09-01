@@ -110,15 +110,15 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr("en", "authService.signup.subject"), i18n.Tr("en", "authService.signup.messageAdmin", map[string]string{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 
-	if signupWithActivate {
+	if !signupWithActivate {
 		go emailService.SendActivationEmail(bson.M{"_id": user.ID})
+		return nil, err
+	} else {
 		message := map[string]string{
 			"token": generateToken(*user),
 		}
 		return message, err
 	}
-
-	return nil, err
 }
 
 // Activate function

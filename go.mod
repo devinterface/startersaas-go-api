@@ -11,6 +11,7 @@ require (
 	github.com/gofiber/jwt/v3 v3.1.2
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/google/uuid v1.3.0
+	github.com/gookit/validate v1.3.1
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869
 	github.com/joho/godotenv v1.4.0
@@ -21,7 +22,6 @@ require (
 	github.com/thoas/go-funk v0.9.1
 	github.com/xhit/go-simple-mail/v2 v2.10.0
 	go.mongodb.org/mongo-driver v1.7.3
-	github.com/gookit/validate v1.3.1
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/sys v0.0.0-20220227234510-4e6760a101f9 // indirect
 	golang.org/x/text v0.3.7 // indirect
@@ -34,9 +34,12 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/gookit/filter v1.1.2 // indirect
+	github.com/gookit/goutil v0.4.4 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/osteele/tuesday v1.0.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

@@ -27,7 +27,7 @@ func (webhookService *WebhookService) HandleWebhook(payload map[string]interface
 		mgm.CollectionByName("webhook").Create(webhook)
 	}(payload)
 	if event.Type == "invoice.payment_succeeded" {
-		success, err = webhookService.PaymentSuccesfull(event)
+		success, err = webhookService.PaymentSuccessful(event)
 	} else if event.Type == "invoice.payment_failed" {
 		success, err = webhookService.PaymentFailed(event)
 	} else if event.Type == "customer.subscription.created" {
@@ -39,7 +39,7 @@ func (webhookService *WebhookService) HandleWebhook(payload map[string]interface
 }
 
 // PaymentSucceeded function
-func (webhookService *WebhookService) PaymentSuccesfull(event stripe.Event) (success bool, err error) {
+func (webhookService *WebhookService) PaymentSuccessful(event stripe.Event) (success bool, err error) {
 	sCustomerID := event.Data.Object["customer"]
 	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
 	if err != nil {
