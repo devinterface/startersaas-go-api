@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/Kamva/mgm/v3 v3.0.1
-	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 	github.com/devinterface/structomap v1.0.0
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible
 	github.com/go-co-op/gocron v1.9.0
@@ -12,13 +11,14 @@ require (
 	github.com/gofiber/jwt/v3 v3.1.2
 	github.com/golang-jwt/jwt/v4 v4.1.0
 	github.com/google/uuid v1.3.0
+	github.com/gookit/validate v1.3.1
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jehiah/go-strftime v0.0.0-20171201141054-1d33003b3869
 	github.com/joho/godotenv v1.4.0
 	github.com/kataras/i18n v0.0.6
 	github.com/mitchellh/mapstructure v1.4.2
 	github.com/osteele/liquid v1.2.4
-	github.com/stripe/stripe-go/v71 v71.48.0
+	github.com/stripe/stripe-go/v72 v72.100.0
 	github.com/thoas/go-funk v0.9.1
 	github.com/xhit/go-simple-mail/v2 v2.10.0
 	go.mongodb.org/mongo-driver v1.7.3
@@ -34,9 +34,12 @@ require (
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/gookit/filter v1.1.2 // indirect
+	github.com/gookit/goutil v0.4.4 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/osteele/tuesday v1.0.3 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

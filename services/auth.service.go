@@ -35,7 +35,7 @@ func checkPasswordHash(password, hash string) bool {
 func (authService *AuthService) Login(email string, cleanPassword string, refreshToken bool) (response map[string]string, err error) {
 	user := &models.User{}
 	coll := mgm.CollectionByName("user")
-	coll.First(bson.M{"email": email, "active": true}, user)
+	coll.First(bson.M{"email": strings.ToLower(email), "active": true}, user)
 
 	// check password if we are not refreshing JWT token
 	if !refreshToken {
@@ -110,15 +110,15 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr("en", "authService.signup.subject"), i18n.Tr("en", "authService.signup.messageAdmin", map[string]string{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 
-	if signupWithActivate {
+	if !signupWithActivate {
 		go emailService.SendActivationEmail(bson.M{"_id": user.ID})
+		return nil, err
+	} else {
 		message := map[string]string{
 			"token": generateToken(*user),
 		}
 		return message, err
 	}
-
-	return nil, err
 }
 
 // Activate function

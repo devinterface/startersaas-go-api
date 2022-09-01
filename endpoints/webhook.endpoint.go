@@ -2,7 +2,7 @@ package endpoints
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/stripe/stripe-go/v71"
+	"github.com/stripe/stripe-go/v72"
 	"go.mongodb.org/mongo-driver/bson"
 )
 

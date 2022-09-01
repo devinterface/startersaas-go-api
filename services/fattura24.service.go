@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"devinterface.com/startersaas-go-api/models"
-	"github.com/stripe/stripe-go/v71"
+	"github.com/stripe/stripe-go/v72"
 )
 
 type Fattura24Service struct{ BaseService }
