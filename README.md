@@ -101,7 +101,9 @@ Below the meaning of every environment variable you can setup.
 
 `STARTER_PLAN_TYPE="starter"` set the plan to assign by default to a new customer. Must match one of the plans defined in `stripe.conf.json`
 
-## Docker variables
+`FRONTEND_CUSTOMER_PORTAL_REDIRECT_URL="http://localhost:3010/dashboard"` the URL to forward after actions on Stripe Customer Portal
+
+### Docker variables
 
 `APP_PORT=3000` the port the API is available in local machine
 
