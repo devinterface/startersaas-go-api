@@ -64,13 +64,6 @@ func main() {
 		opt.StopOnError = false
 	})
 
-	// app.Use(func(c *fiber.Ctx) error {
-	// 	if c.Is("json") {
-	// 		return c.Next()
-	// 	}
-	// 	return c.SendString("Only JSON allowed!")
-	// })
-
 	endpoints.SetupPublicRoutes(app)
 
 	// JWT Middleware
