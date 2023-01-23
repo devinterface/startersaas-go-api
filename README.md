@@ -192,3 +192,7 @@ Set `"planType"` with your plan code to a more user friendly knowledge of the cu
 Author: Stefano Mancini <stefano.mancini@devinterface.com>
 
 Company: DevInterface SRL (https://www.devinterface.com)
+
+### License
+
+Licensed under the [MIT License](https://github.com/devinterface/startersaas-go-api/blob/master/LICENSE)
