@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -107,6 +108,8 @@ func (authService *AuthService) Signup(params map[string]interface{}, signupWith
 	if err != nil {
 		return nil, err
 	}
+
+	fmt.Println("signupWithActivate -->", signupWithActivate)
 
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr("en", "authService.signup.subject"), i18n.Tr("en", "authService.signup.messageAdmin", map[string]string{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 

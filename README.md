@@ -1,4 +1,4 @@
-# Starter SaaS Go API
+# StarterSaaS Go API
 
 This project contains everything you need to setup a fully featured SaaS API in 5 minutes.
 
@@ -71,7 +71,7 @@ Below the meaning of every environment variable you can setup.
 
 `JWT_SECRET="aaabbbccc"` set this value secret, very long and random
 
-`JWT_EXPIRE="20"` # how many days the JWT token last
+`JWT_EXPIRE=20` # how many days the JWT token last
 
 `FRONTEND_LOGIN_URL="http://localhost:5000/auth/login"` raplace http://localhost:5000 with the real production host of the React frontend
 
@@ -83,15 +83,13 @@ Below the meaning of every environment variable you can setup.
 
 `MAILER_PASSWORD='bar'` the SMTP server password
 
+`MAILER_SSL=false`, true if the SMTP server uses SSL
+
 `DEFAULT_EMAIL_FROM="noreply@startersaas.com"` send every notification email from this address
 
 `LOCALE="en"` the default locale for registered users
 
 `STRIPE_SECRET_KEY="sk_test_xyz"` the Stripe secret key
-
-`FATTURA24_KEY="XYZ"` the Fattura 24 secret key (Italian market only)
-
-`FATTURA24_URL="https://www.app.fattura24.com/api/v0.3/SaveDocument"` do not change this value
 
 `TRIAL_DAYS=15` how many days a new user can work without subscribing
 
@@ -101,7 +99,19 @@ Below the meaning of every environment variable you can setup.
 
 `SIGNUP_WITH_ACTIVATE=true` set this value as true if you want to log the new registered user directly, without asking for email confirmation
 
-`STARTER_PLAN_TYPE="starter"` set the plan to assign by default to a new customer
+`STARTER_PLAN_TYPE="starter"` set the plan to assign by default to a new customer. Must match one of the plans defined in `stripe.conf.json`
+
+`FRONTEND_CUSTOMER_PORTAL_REDIRECT_URL="http://localhost:3010/dashboard"` the URL to forward after actions on Stripe Customer Portal
+
+### Docker variables
+
+`APP_PORT=3000` the port the API is available in local machine
+
+`MONGO_PORT=27017` the port the Database is available in local machine
+
+`REDIS_PORT=6379` the port the Redis server is available in local machine
+
+`MAILHOG_UI_PORT=8025` the port the Mailhog is available in local machine
 
 # Configuring stripe.conf.json
 
@@ -138,36 +148,44 @@ Set `"planType"` with your plan code to a more user friendly knowledge of the cu
 
 ### API and Frontend
 
-- user registration of account with subdomain, email and password
-- user email activation with 6 characters code and account creation
-- resend activation code if not received
-- user password reset through code sent by email
-- user login
-- user logout
-- user change password once logged in
-- account trial period
-- edit of account billing informations
-- subscription creation
-- plan change
-- add new credit card
-- subscription cancel
-- 3D Secure ready payments
-- account's users list (by admins only)
-- account's user create (by admins only)
-- account's user update (by admins only)
-- account's user delete (by admins only)
+- [x] user registration of account with subdomain, email and password
+- [x] user email activation with 6 characters code and account creation
+- [x] resend activation code if not received
+- [x] user password reset through code sent by email
+- [x] user login
+- [x] user logout
+- [x] user change password once logged in
+- [x] account trial period
+- [x] edit of account billing information
+- [x] subscription creation
+- [x] plan change
+- [x] add new credit card
+- [x] remove credit card
+- [x] subscription cancel
+- [x] subscription re enable
+- [x] 3D Secure ready payments
+- [x] subscription handling via Stripe customer portal
+- [x] account's users list (by admins only)
+- [x] account's user create (by admins only)
+- [x] account's user update (by admins only)
+- [x] account's user delete (by admins only)
 
 ### API only
 
-- stripe webhooks handling
+- [x] stripe webhooks handling
 - events notifications by email:
-  - new user subscribed
-  - successful payments
-  - failed payments
+  - [x] new user subscribed
+  - [x] successful payments
+  - [x] failed payments
 - daily notifications by email:
-  - expiring trials
-  - failed payments
-  - account suspension due to failed payments
+  - [x] expiring trials
+  - [x] failed payments
+  - [x] account suspension due to failed payments
+
+### TODO
+
+- [ ] signup with Google
+- [ ] teams handling
 
 ### CREDITS
 
@@ -175,4 +193,6 @@ Author: Stefano Mancini <stefano.mancini@devinterface.com>
 
 Company: DevInterface SRL (https://www.devinterface.com)
 
-Issues repository: https://github.com/devinterface/startersaas-issues
+### License
+
+Licensed under the [MIT License](https://github.com/devinterface/startersaas-go-api/blob/master/LICENSE)

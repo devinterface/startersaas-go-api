@@ -1,13 +1,15 @@
-FROM golang:1.17
+FROM golang:1.19
 
 WORKDIR /go/src/app/
 
 COPY . .
 
+RUN apt update
+
 RUN go mod download -x
 
-RUN go get github.com/githubnemo/CompileDaemon
+RUN go install github.com/cosmtrek/air@latest
 
 EXPOSE 3000
 
-ENTRYPOINT CompileDaemon --build="go build main.go" --command="./main"
+CMD ["air", "-c", ".air.toml"]

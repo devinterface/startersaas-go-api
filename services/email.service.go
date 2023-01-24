@@ -168,7 +168,13 @@ func SendMail(from, subject, body string, to []string) error {
 }
 
 func (emailService *EmailService) StoreEmails() (err error) {
-	for _, code := range []string{"activate", "activationLink", "forgotPassword", "notification"} {
+	activate := []string{"activate", "Welcome"}
+	activationLink := []string{"activationLink", "Activation link"}
+	forgotPassword := []string{"forgotPassword", "Forgot password"}
+	notification := []string{"notification", "Notification"}
+	for _, email := range [][]string{activate, activationLink, forgotPassword, notification} {
+		code := email[0]
+		title := email[1]
 		storedEmail, _ := loadEmail(code, "en")
 		if storedEmail.Code == "" {
 			template, _ := ioutil.ReadFile(fmt.Sprintf("./emails/%s.email.liquid", code))
@@ -176,7 +182,7 @@ func (emailService *EmailService) StoreEmails() (err error) {
 			email.Body = string(template)
 			email.Code = code
 			email.Lang = "en"
-			email.Subject = fmt.Sprintf("[Starter SaaS] %s", code)
+			email.Subject = fmt.Sprintf("[StarterSaaS] %s", title)
 			err = emailService.getCollection().Create(email)
 		}
 	}

@@ -1,28 +1,28 @@
 webhookService:
   paymentSuccessful:
-    subject: "[Starter SAAS] Payment completed"
+    subject: "[StarterSaaS] Payment completed"
     message: "Congratulations, your subscription has been renewed."
     messageAdmin: "{{.Email}} - {{.Subdomain}} paid a subscription."
   newSubscription:
-    subject: "[Starter SAAS] New subscription activated"
+    subject: "[StarterSaaS] New subscription activated"
     message: "Congratulations, your subscription has been activated."
     messageAdmin: "{{.Email}} - {{.Subdomain}} activated a subscription."
   subscriptionUpdated:
-    subject: "[Starter SAAS] Subscription updated"
+    subject: "[StarterSaaS] Subscription updated"
     message: "Congratulations, your subscription has been updated."
     messageAdmin: "{{.Email}} - {{.Subdomain}} updated a subscription."
   paymentFailed:
-    subject: "[Starter SAAS] Payment failed"
-    message: "Your payment wasn't successful. Please go to this <a href=\"{{.StripeHostedInvoiceUrl}}\" target=\"_blank\">url</a> to pay your subscription, otherwise your subscription will be deactivated on {{.Date}}."
+    subject: "[StarterSaaS] Payment failed"
+    message: 'Your payment wasn''t successful. Please go to this <a href="{{.StripeHostedInvoiceUrl}}" target="_blank">url</a> to pay your subscription, otherwise your subscription will be deactivated on {{.Date}}.'
     messageAdmin: "{{.Email}} - {{.Subdomain}} has a failed payment. His subscription will be deactivated on {{.Date}}."
 authService:
   signup:
-    subject: "[Starter SAAS] New subscriber"
+    subject: "[StarterSaaS] New subscriber"
     messageAdmin: "{{.Email}} - {{.Subdomain}} has been subscribed."
 subscriptionService:
   runNotifyExpiringTrials:
-    subject: "[Starter SAAS] Trial version is expiring in {{.DaysToExpire}} day/s"
+    subject: "[StarterSaaS] Trial version is expiring in {{.DaysToExpire}} day/s"
     message: "Dear user, your trial period is exipring in {{.DaysToExpire}} day/s. Please login and subscribe to a plan."
   runNotifyPaymentFailed:
-    subject: "[Starter SAAS] Subscription will be deactivated in {{.DaysToExpire}} day/s"
+    subject: "[StarterSaaS] Subscription will be deactivated in {{.DaysToExpire}} day/s"
     message: "Dear user, due to a failed payment your subscription will be deactivated on {{.Date}}. Please login and check your credit card."

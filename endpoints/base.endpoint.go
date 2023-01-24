@@ -17,7 +17,6 @@ var userService = services.UserService{}
 var emailService = services.EmailService{}
 var subscriptionService = services.SubscriptionService{}
 var webhookService = services.WebhookService{}
-var fattura24Service = services.Fattura24Service{}
 
 // CurrentUser function
 func (baseEndpoint *BaseEndpoint) CurrentUser(ctx *fiber.Ctx) (me *models.User, err error) {
