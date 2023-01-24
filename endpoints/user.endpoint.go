@@ -44,7 +44,7 @@ func (userEndpoint *UserEndpoint) UpdateMe(ctx *fiber.Ctx) error {
 	ctx.BodyParser(&inputMap)
 
 	v := validate.Map(inputMap)
-	v.StringRule("password", "ascii|required")
+	v.StringRule("language", "in:it,en")
 
 	if !v.Validate() {
 		return ctx.Status(422).JSON(v.Errors)

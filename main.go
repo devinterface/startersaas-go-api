@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"time"
@@ -16,13 +17,25 @@ import (
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/gookit/validate"
 	_ "github.com/joho/godotenv/autoload"
+	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func initDabatase() {
-	mgm.SetDefaultConfig(nil, os.Getenv("DATABASE"), options.Client().ApplyURI(os.Getenv("DATABASE_URI")))
+	monitor := &event.CommandMonitor{
+		Started: func(_ context.Context, e *event.CommandStartedEvent) {
+			//fmt.Println(e.Command)
+		},
+		Succeeded: func(_ context.Context, e *event.CommandSucceededEvent) {
+			//fmt.Println(e.Reply)
+		},
+		Failed: func(_ context.Context, e *event.CommandFailedEvent) {
+			//fmt.Println(e.Failure)
+		},
+	}
+	opts := options.Client().SetMonitor(monitor)
+	mgm.SetDefaultConfig(nil, os.Getenv("DATABASE"), options.Client().ApplyURI(os.Getenv("DATABASE_URI")), opts)
 }
-
 func runScheduledNotifications() (err error) {
 	var subscriptionService = services.SubscriptionService{}
 	subscriptionService.RunNotifyExpiringTrials()
@@ -50,13 +63,6 @@ func main() {
 	validate.Config(func(opt *validate.GlobalOption) {
 		opt.StopOnError = false
 	})
-
-	// app.Use(func(c *fiber.Ctx) error {
-	// 	if c.Is("json") {
-	// 		return c.Next()
-	// 	}
-	// 	return c.SendString("Only JSON allowed!")
-	// })
 
 	endpoints.SetupPublicRoutes(app)
 

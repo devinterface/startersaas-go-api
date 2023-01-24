@@ -26,12 +26,12 @@ func (webhookService *WebhookService) HandleWebhook(payload map[string]interface
 		webhook.Payload = payload
 		mgm.CollectionByName("webhook").Create(webhook)
 	}(payload)
-	if event.Type == "invoice.payment_succeeded" {
+	if event.Type == "invoice.paid" {
 		success, err = webhookService.PaymentSuccessful(event)
 	} else if event.Type == "invoice.payment_failed" {
 		success, err = webhookService.PaymentFailed(event)
 	} else if event.Type == "customer.subscription.created" {
-		success, err = webhookService.NewSubscription(event)
+		success, err = webhookService.SubscriptionUpdated(event)
 	} else if event.Type == "customer.subscription.updated" {
 		success, err = webhookService.SubscriptionUpdated(event)
 	}
@@ -50,12 +50,26 @@ func (webhookService *WebhookService) PaymentSuccessful(event stripe.Event) (suc
 	account.PaymentFailedSubscriptionEndsAt = *new(time.Time)
 	account.TrialPeriodEndsAt = *new(time.Time)
 	_ = accountService.getCollection().Update(account)
-	user, err := userService.OneBy(bson.M{"accountId": account.ID})
+	user, err := userService.OneBy(bson.M{"accountId": account.ID, "accountOwner": true})
 	if err != nil {
 		return false, err
 	}
-	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentSuccessful.subject"), i18n.Tr(user.Language, "webhookService.paymentSuccessful.message"), user.Language)
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentSuccessful.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentSuccessful.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
+
+	billingReason := event.Data.Object["billing_reason"]
+	if billingReason == "subscription_create" {
+		go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.newSubscription.subject"), i18n.Tr(user.Language, "webhookService.newSubscription.message"), user.Language)
+		go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.newSubscription.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.newSubscription.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
+
+	}
+	if billingReason == "subscription_update" {
+		go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.subscriptionUpdated.subject"), i18n.Tr(user.Language, "webhookService.subscriptionUpdated.message"), user.Language)
+		go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.subscriptionUpdated.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.subscriptionUpdated.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
+	}
+	if billingReason == "subscription_cycle" {
+		go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentSuccessful.subject"), i18n.Tr(user.Language, "webhookService.paymentSuccessful.message"), user.Language)
+		go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentSuccessful.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentSuccessful.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
+	}
+
 	return err != nil, err
 }
 
@@ -87,26 +101,6 @@ func (webhookService *WebhookService) PaymentFailed(event stripe.Event) (success
 	stripeHostedInvoiceUrl := event.Data.Object["hosted_invoice_url"]
 	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.paymentFailed.subject"), i18n.Tr(user.Language, "webhookService.paymentFailed.message", map[string]interface{}{"Date": formattedSubscriptionDeactivatedAt, "StripeHostedInvoiceUrl": stripeHostedInvoiceUrl}), user.Language)
 	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentFailed.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.paymentFailed.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email, "Date": formattedSubscriptionDeactivatedAt}), os.Getenv("LOCALE"))
-	return err != nil, err
-}
-
-// SubscriptionCreated function
-func (webhookService *WebhookService) NewSubscription(event stripe.Event) (success bool, err error) {
-	status := event.Data.Object["status"]
-	if status != "active" {
-		return false, err
-	}
-	sCustomerID := event.Data.Object["customer"]
-	account, err := accountService.OneBy(bson.M{"stripeCustomerId": sCustomerID})
-	if err != nil {
-		return false, err
-	}
-	user, err := userService.OneBy(bson.M{"accountId": account.ID, "accountOwner": true})
-	if err != nil {
-		return false, err
-	}
-	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.newSubscription.subject"), i18n.Tr(user.Language, "webhookService.newSubscription.message"), user.Language)
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.newSubscription.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.newSubscription.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 	return err != nil, err
 }
 
@@ -142,11 +136,5 @@ func (webhookService *WebhookService) SubscriptionUpdated(event stripe.Event) (s
 	account.PlanType = plan["planType"].(string)
 
 	_ = accountService.getCollection().Update(account)
-	user, err := userService.OneBy(bson.M{"accountId": account.ID, "accountOwner": true})
-	if err != nil {
-		return false, err
-	}
-	go emailService.SendNotificationEmail(user.Email, i18n.Tr(user.Language, "webhookService.subscriptionUpdated.subject"), i18n.Tr(user.Language, "webhookService.subscriptionUpdated.message"), user.Language)
-	go emailService.SendNotificationEmail(os.Getenv("NOTIFIED_ADMIN_EMAIL"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.subscriptionUpdated.subject"), i18n.Tr(os.Getenv("LOCALE"), "webhookService.subscriptionUpdated.messageAdmin", map[string]interface{}{"Subdomain": account.Subdomain, "Email": user.Email}), os.Getenv("LOCALE"))
 	return err != nil, err
 }
