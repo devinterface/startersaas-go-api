@@ -87,3 +87,15 @@ func (filteredQuery FilteredQuery) BuildPaginatedFindOptions() (findOptions *opt
 	}
 	return findOptions
 }
+
+func MaxTeamsPerPlan(plan string) (maxGroups int) {
+	if plan == StarterPlan {
+		return 0
+	} else if plan == BasicPlan {
+		return 1000000
+	} else if plan == PremiumPlan {
+		return 1000000
+	} else {
+		return 0
+	}
+}

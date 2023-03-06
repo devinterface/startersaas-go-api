@@ -68,3 +68,9 @@ func (account *Account) SubscriptionStatus() string {
 		return SubscriptionActive
 	}
 }
+
+const (
+	StarterPlan = "starter"
+	BasicPlan   = "basic"
+	PremiumPlan = "pro"
+)

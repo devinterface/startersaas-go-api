@@ -8,6 +8,11 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type UserInner struct {
+	ID    primitive.ObjectID `json:"id" bson:"id"`
+	Email string             `json:"email" bson:"email"`
+}
+
 // User struct
 type User struct {
 	mgm.DefaultModel     `bson:",inline"`
@@ -24,6 +29,7 @@ type User struct {
 	Active               bool               `json:"active" bson:"active"`
 	AccountOwner         bool               `json:"accountOwner" bson:"accountOwner"`
 	AccountID            primitive.ObjectID `json:"accountId" bson:"accountId"`
+	Teams                []TeamInner        `json:"teams" bson:"teams"`
 }
 
 const (
@@ -45,4 +51,11 @@ func ShowUserSerializer() *UserSerializer {
 	u := &UserSerializer{structomap.New()}
 	u.UseCamelCase().Pick("ID", "Name", "Surname", "Email", "Language", "Role", "Active", "AccountID", "AccountOwner", "CreatedAt", "UpdatedAt")
 	return u
+}
+
+func (user *User) ToUserInner() UserInner {
+	userInner := UserInner{}
+	userInner.ID = user.ID
+	userInner.Email = user.Email
+	return userInner
 }
