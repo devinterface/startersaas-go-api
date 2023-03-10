@@ -14,6 +14,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/requestid"
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/gookit/validate"
 	_ "github.com/joho/godotenv/autoload"
@@ -53,7 +55,9 @@ func main() {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: os.Getenv("CORS_SITES"),
 	}))
-	app.Use(logger.New())
+	app.Use(recover.New())
+	app.Use(requestid.New())
+	app.Use(logger.New(logger.Config{Format: "[${time}] ${locals:requestid} ${status} - ${method} ${path}​\n"}))
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed,
 	}))
