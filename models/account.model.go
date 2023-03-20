@@ -72,5 +72,5 @@ func (account *Account) SubscriptionStatus() string {
 const (
 	StarterPlan = "starter"
 	BasicPlan   = "basic"
-	PremiumPlan = "pro"
+	PremiumPlan = "premium"
 )

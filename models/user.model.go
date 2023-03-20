@@ -49,7 +49,7 @@ type UserSerializer struct {
 // ShowUserSerializer function
 func ShowUserSerializer() *UserSerializer {
 	u := &UserSerializer{structomap.New()}
-	u.UseCamelCase().Pick("ID", "Name", "Surname", "Email", "Language", "Role", "Active", "AccountID", "AccountOwner", "CreatedAt", "UpdatedAt")
+	u.UseCamelCase().Pick("ID", "Name", "Surname", "Email", "Language", "Role", "Active", "AccountID", "AccountOwner", "Teams", "CreatedAt", "UpdatedAt")
 	return u
 }
 

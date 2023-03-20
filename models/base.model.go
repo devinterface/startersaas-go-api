@@ -90,11 +90,11 @@ func (filteredQuery FilteredQuery) BuildPaginatedFindOptions() (findOptions *opt
 
 func MaxTeamsPerPlan(plan string) (maxGroups int) {
 	if plan == StarterPlan {
-		return 0
+		return 5
 	} else if plan == BasicPlan {
-		return 1000000
+		return 10
 	} else if plan == PremiumPlan {
-		return 1000000
+		return 20
 	} else {
 		return 0
 	}
