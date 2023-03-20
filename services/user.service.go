@@ -82,6 +82,7 @@ func (userService *UserService) Create(params interface{}, accountID primitive.O
 	user.Sso = ssoUUID.String()
 	user.AccountID = accountID
 	user.Active = true
+	user.Teams = []models.TeamInner{}
 	err = userService.getCollection().Create(user)
 	return user, err
 }

@@ -1,7 +1,6 @@
 package endpoints
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -69,7 +68,6 @@ func (authEndpoint *AuthEndpoint) Signup(ctx *fiber.Ctx) error {
 		return ctx.Status(422).JSON(v.Errors)
 	}
 
-	fmt.Println("SIGNUP_WITH_ACTIVATE -->", os.Getenv("SIGNUP_WITH_ACTIVATE"), os.Getenv("SIGNUP_WITH_ACTIVATE") == "true")
 	response, err := authService.Signup(inputMap, os.Getenv("SIGNUP_WITH_ACTIVATE") == "true")
 	if err != nil {
 		return ctx.Status(422).JSON(fiber.Map{

@@ -10,6 +10,7 @@ var accountEndpoint = AccountEndpoint{}
 var userEndpoint = UserEndpoint{}
 var subscriptionEndpoint = SubscriptionEndpoint{}
 var webhookEndpoint = WebhookEndpoint{}
+var teamEndpoint = TeamEndpoint{}
 
 // SetupPublicRoutes function
 func SetupPublicRoutes(app *fiber.App) {
@@ -35,6 +36,13 @@ func SetupPrivateRoutes(app *fiber.App) {
 	v1.Post("/auth/refresh-token", middlewares.LoadUserAccount, authEndpoint.RefreshToken)
 	v1.Get("/accounts/:id", middlewares.LoadUserAccount, accountEndpoint.ByID)
 	v1.Put("/accounts/:id", middlewares.LoadUserAccount, accountEndpoint.Update)
+	v1.Get("/teams", middlewares.LoadUserAccount, teamEndpoint.Index)
+	v1.Get("/teams/:id", middlewares.LoadUserAccount, teamEndpoint.ByID)
+	v1.Post("/teams", middlewares.LoadUserAccount, teamEndpoint.Create)
+	v1.Delete("/teams/:id", middlewares.LoadUserAccount, teamEndpoint.Delete)
+	v1.Put("/teams/:id", middlewares.LoadUserAccount, teamEndpoint.Update)
+	v1.Put("/teams/:id/add-user/:userId", middlewares.LoadUserAccount, teamEndpoint.AddUser)
+	v1.Put("/teams/:id/remove-user/:userId", middlewares.LoadUserAccount, teamEndpoint.RemoveUser)
 	v1.Get("/users/me", middlewares.LoadUserAccount, userEndpoint.Me)
 	v1.Put("/users/me", middlewares.LoadUserAccount, userEndpoint.UpdateMe)
 	v1.Put("/users/me/change-password", middlewares.LoadUserAccount, userEndpoint.ChangePassword)
