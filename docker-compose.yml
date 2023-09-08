@@ -2,7 +2,7 @@ version: "3"
 services:
   startersaas-go-api:
     container_name: startersaas-go-api
-    build: 
+    build:
       context: .
       dockerfile: docker/dev/Dockerfile
     volumes:
@@ -27,10 +27,10 @@ services:
     volumes:
       - redis:/data
     networks:
-      - startersaas-network 
+      - startersaas-network
 
-  startersaas-mongo:  
-    image: mongo:4.4
+  startersaas-mongo:
+    image: mongo:7.0
     volumes:
       - mongo:/data/db
     ports:
@@ -39,7 +39,7 @@ services:
       - .env
     networks:
       - startersaas-network
-    
+
   startersaas-mailhog:
     image: mailhog/mailhog
     logging:
